@@ -1,0 +1,83 @@
+{% set program_labels = {
+  'smiles': 'Smiles', 'latam': 'LATAM Pass', 'azul': 'Azul Fidelidade',
+  'livelo': 'Livelo', 'esfera': 'Esfera', 'iupp': 'Iupp'
+} %}
+{% set program_accent = {
+  'smiles': '#f97316', 'latam': '#dc2626', 'azul': '#2563eb',
+  'livelo': '#7c3aed', 'esfera': '#0891b2', 'iupp': '#d97706'
+} %}
+{% set src = promo.origin_program or promo.source_program %}
+{% set dst = promo.destination_program %}
+{% set src_accent = program_accent.get(src, '#64748b') %}
+{% set dst_accent = program_accent.get(dst, '#64748b') %}
+{% set src_label = program_labels.get(src, src) %}
+{% set dst_label = program_labels.get(dst, dst) %}
+{% if promo.bonus_percent %}
+  {% set bonus_label = '+' ~ promo.bonus_percent|int ~ '%' %}
+  {% if promo.bonus_percent >= 80 %}{% set bonus_color = '#16a34a' %}
+  {% elif promo.bonus_percent >= 50 %}{% set bonus_color = '#ca8a04' %}
+  {% else %}{% set bonus_color = '#2563eb' %}{% endif %}
+{% else %}
+  {% set bonus_label = '–' %}
+  {% set bonus_color = '#64748b' %}
+{% endif %}
+
+<table width="100%" cellspacing="0" cellpadding="0" border="0"
+  style="background:#ffffff;border:1px solid #e2e8f0;border-radius:14px;margin-bottom:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.05)">
+  <tr>
+    <td style="border-left:4px solid {{ src_accent }}">
+      <table width="100%" cellspacing="0" cellpadding="0" border="0">
+        <tr>
+          <td style="padding:14px 20px 10px">
+            <a href="{{ promo.source_url }}" style="font-size:15px;font-weight:700;color:#0f172a;text-decoration:none;display:block;margin-bottom:8px">
+              {{ promo.title or src_label }}
+            </a>
+            <table cellspacing="0" cellpadding="0" border="0">
+              <tr>
+                <td>
+                  {% if dst %}
+                  <table cellspacing="0" cellpadding="0" border="0">
+                    <tr>
+                      <td style="background:{{ src_accent }}18;color:{{ src_accent }};border:1px solid {{ src_accent }}40;border-radius:20px;padding:3px 11px;font-size:12px;font-weight:700;white-space:nowrap">{{ src_label }}</td>
+                      <td style="padding:0 8px;color:#94a3b8;font-size:14px">&#8594;</td>
+                      <td style="background:{{ dst_accent }}18;color:{{ dst_accent }};border:1px solid {{ dst_accent }}40;border-radius:20px;padding:3px 11px;font-size:12px;font-weight:700;white-space:nowrap">{{ dst_label }}</td>
+                    </tr>
+                  </table>
+                  {% else %}
+                  <span style="background:{{ src_accent }}18;color:{{ src_accent }};border:1px solid {{ src_accent }}40;border-radius:20px;padding:3px 11px;font-size:12px;font-weight:700">{{ src_label }}</span>
+                  {% endif %}
+                </td>
+                <td style="padding-left:16px">
+                  <span style="font-size:22px;font-weight:800;color:{{ bonus_color }}">{{ bonus_label }}</span>
+                  <span style="font-size:11px;color:#94a3b8;display:block;margin-top:-2px">de bônus</span>
+                </td>
+                {% if promo.ends_at %}
+                <td style="padding-left:16px;text-align:right;white-space:nowrap">
+                  <span style="font-size:11px;color:#94a3b8">válido até</span><br>
+                  <span style="font-size:13px;font-weight:600;color:#475569">{{ promo.ends_at.strftime('%d %b %Y') }}</span>
+                </td>
+                {% endif %}
+              </tr>
+            </table>
+          </td>
+        </tr>
+        {% if promo.conditions %}
+        <tr>
+          <td style="padding:0 20px 12px">
+            <span style="font-size:12px;color:#64748b;background:#f8fafc;border-radius:6px;padding:4px 10px;display:inline-block">{{ promo.conditions }}</span>
+          </td>
+        </tr>
+        {% endif %}
+        <tr>
+          <td style="padding:0 20px 14px">
+            <a href="{{ promo.source_url }}"
+              style="display:inline-block;background:#0f172a;color:#fff;font-size:12px;font-weight:600;
+                     text-decoration:none;padding:7px 16px;border-radius:8px;letter-spacing:.2px">
+              Ver promoção &#8594;
+            </a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>

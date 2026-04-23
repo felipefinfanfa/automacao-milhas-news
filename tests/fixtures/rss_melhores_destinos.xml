@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Melhores Destinos</title>
+    <link>https://www.melhoresdestinos.com.br</link>
+    <description>Notícias de milhas e viagens</description>
+    <item>
+      <title>Smiles lança promoção de 100% de bônus na transferência de pontos Livelo</title>
+      <link>https://www.melhoresdestinos.com.br/smiles-bonus-livelo-2026</link>
+      <description>A Smiles anunciou uma promoção de transferência bonificada com 100% de bônus. Válida até 31/05/2026.</description>
+      <pubDate>Thu, 23 Apr 2026 10:00:00 +0000</pubDate>
+    </item>
+    <item>
+      <title>Azul Fidelidade com 60% de bônus na transferência Esfera</title>
+      <link>https://www.melhoresdestinos.com.br/azul-bonus-esfera</link>
+      <description>Transferência com 60% de bônus entre Esfera e Azul Fidelidade. Válido de 01/05/2026 a 15/05/2026.</description>
+      <pubDate>Wed, 22 Apr 2026 14:30:00 +0000</pubDate>
+    </item>
+    <item>
+      <title>Novos destinos disponíveis na LATAM</title>
+      <link>https://www.melhoresdestinos.com.br/latam-destinos</link>
+      <description>LATAM anuncia novos destinos para o verão europeu.</description>
+      <pubDate>Tue, 21 Apr 2026 09:00:00 +0000</pubDate>
+    </item>
+  </channel>
+</rss>

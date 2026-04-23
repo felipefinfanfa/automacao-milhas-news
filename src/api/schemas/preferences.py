@@ -1,0 +1,51 @@
+from __future__ import annotations
+
+from typing import Any
+
+from pydantic import BaseModel, EmailStr, Field, field_validator
+
+from src.config.settings import LOYALTY_PROGRAMS
+
+
+class TransferPairIn(BaseModel):
+    source: str
+    dest: str
+
+    model_config = {"str_strip_whitespace": True}
+
+
+class UserPreferencesIn(BaseModel):
+    monitored_programs: list[str] = Field(default_factory=list)
+    transfer_pairs: list[TransferPairIn] = Field(default_factory=list)
+    accumulation_programs: list[str] = Field(default_factory=list)
+
+    def validated_programs(self) -> list[str]:
+        return [p for p in self.monitored_programs if p in LOYALTY_PROGRAMS]
+
+    def validated_accumulation(self) -> list[str]:
+        return [p for p in self.accumulation_programs if p in LOYALTY_PROGRAMS]
+
+
+class UserPreferencesOut(BaseModel):
+    user_id: str
+    email: str | None = None
+    monitored_programs: list[str]
+    transfer_pairs: list[TransferPairIn]
+    accumulation_programs: list[str]
+
+    model_config = {"from_attributes": True}
+
+    @field_validator("user_id", mode="before")
+    @classmethod
+    def coerce_uuid(cls, v: Any) -> str:
+        return str(v)
+
+
+class RegisterIn(BaseModel):
+    email: EmailStr
+
+
+class RegisterOut(BaseModel):
+    user_id: str
+    email: str
+    is_new: bool
