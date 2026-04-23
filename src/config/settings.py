@@ -1,6 +1,5 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
-
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 LOYALTY_PROGRAMS = ["smiles", "azul", "latam", "livelo", "esfera", "iupp"]
 
@@ -59,6 +58,12 @@ class Settings(BaseSettings):
 
     # Recipients
     digest_recipient: str = Field(alias="DIGEST_RECIPIENT")
+
+    # Capacity & URLs
+    max_users: int = Field(default=200, alias="MAX_USERS")
+    app_base_url: str = Field(
+        default="https://milhas.felipefinfanfa.com.br", alias="APP_BASE_URL"
+    )
 
     # Observability
     sentry_dsn: str = Field(default="", alias="SENTRY_DSN")

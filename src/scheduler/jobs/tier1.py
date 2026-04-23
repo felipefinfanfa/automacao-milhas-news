@@ -102,16 +102,24 @@ def _dispatch_emails(session: Any, new_promos_data: list[PromotionData], schedul
         if p.ends_at is None or p.ends_at > now
     ]
 
+    # Mantém apenas transferências bonificadas com % definido
+    new_db_promos = [
+        p for p in new_db_promos
+        if p.promo_type == "transfer_bonus" and p.bonus_percent is not None
+    ]
+
     # Separa ativas (starts_at <= now ou sem data de início) das futuras
     active_db = [p for p in new_db_promos if p.starts_at is None or p.starts_at <= now]
     future_db = [p for p in new_db_promos if p.starts_at is not None and p.starts_at > now]
 
-    # Top 20 promoções ativas do banco para o digest consolidado
+    # Top 20 transferências bonificadas ativas do banco para o digest consolidado
     active_promos = (
         session.query(Promotion)
         .filter(
             (Promotion.ends_at == None) | (Promotion.ends_at > now),  # noqa: E711
             (Promotion.starts_at == None) | (Promotion.starts_at <= now),  # noqa: E711
+            Promotion.promo_type == "transfer_bonus",
+            Promotion.bonus_percent.isnot(None),
         )
         .order_by(Promotion.bonus_percent.desc().nullslast())
         .limit(20)
@@ -138,6 +146,7 @@ def _dispatch_emails(session: Any, new_promos_data: list[PromotionData], schedul
                 new_promos=user_active_db,
                 all_active_promos=active_promos,
                 scheduler=scheduler,
+                unsubscribe_token=prefs.unsubscribe_token,
             )
 
         if user_future_db:
@@ -147,4 +156,5 @@ def _dispatch_emails(session: Any, new_promos_data: list[PromotionData], schedul
                 user_email=user_email,
                 future_promos=user_future_db,
                 scheduler=scheduler,
+                unsubscribe_token=prefs.unsubscribe_token,
             )

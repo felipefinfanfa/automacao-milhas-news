@@ -17,8 +17,7 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader
 
 from src.config.settings import settings
-from src.email.sequence import has_sent, record_sent, schedule_followup_days
-from src.types import PromotionData
+from src.email.sequence import has_sent, record_sent
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +32,7 @@ def _render_template(template_name: str, context: dict[str, Any]) -> str:
     now = datetime.now(timezone.utc)
     context.setdefault("date_str", now.strftime("%A, %d de %B de %Y").lower())
     context.setdefault("unsubscribe_url", None)
+    context.setdefault("manage_url", None)
     tpl = _jinja_env.get_template(template_name)
     return tpl.render(**context)
 
@@ -84,6 +84,42 @@ def send_email(to: str, subject: str, html: str) -> bool:
     return _send_via_resend(to, subject, html) or _send_via_gmail(to, subject, html)
 
 
+def dispatch_confirmation(
+    user_id: str,
+    user_email: str,
+    unsubscribe_token: str | None,
+    transfer_pairs: list[Any],
+    accumulation_programs: list[str],
+) -> bool:
+    """Envia e-mail de confirmação após o usuário salvar suas preferências."""
+    unsubscribe_url, manage_url = _build_email_urls(user_id, unsubscribe_token)
+    html = _render_template(
+        "confirmation.html",
+        {
+            "email_title": "Preferências salvas — Miles Radar",
+            "header_title": 'Prefer&ecirc;ncias <span style="color:#38bdf8">Salvas</span>',
+            "transfer_pairs": transfer_pairs,
+            "accumulation_programs": accumulation_programs,
+            "unsubscribe_url": unsubscribe_url,
+            "manage_url": manage_url,
+        },
+    )
+    sent = send_email(user_email, "Miles Radar — Preferências salvas", html)
+    if sent:
+        logger.info("E-mail de confirmação enviado para %s", user_email)
+    return sent
+
+
+def _build_email_urls(user_id: str, unsubscribe_token: str | None) -> tuple[str | None, str]:
+    unsubscribe_url = (
+        f"{settings.app_base_url}/preferences/unsubscribe/{unsubscribe_token}"
+        if unsubscribe_token
+        else None
+    )
+    manage_url = f"{settings.app_base_url}/?user_id={user_id}"
+    return unsubscribe_url, manage_url
+
+
 def dispatch_day1(
     session: Any,
     user_id: str,
@@ -91,13 +127,15 @@ def dispatch_day1(
     new_promos: list[Any],
     all_active_promos: list[Any],
     scheduler: Any | None = None,
+    unsubscribe_token: str | None = None,
 ) -> bool:
     """Envia e-mail consolidado do Dia 1 para um usuário.
 
     Args:
         new_promos: promoções novas (ainda não enviadas para este usuário).
         all_active_promos: todas as promoções ativas filtradas pelo usuário.
-        scheduler: instância do APScheduler para agendar Dia 2/3.
+        scheduler: ignorado — mantido por compatibilidade de assinatura.
+        unsubscribe_token: token UUID do usuário para o link de cancelamento.
 
     Returns:
         True se o e-mail foi enviado com sucesso.
@@ -120,6 +158,8 @@ def dispatch_day1(
         default=None,
     )
 
+    unsubscribe_url, manage_url = _build_email_urls(user_id, unsubscribe_token)
+
     html = _render_template(
         "day1.html",
         {
@@ -132,6 +172,8 @@ def dispatch_day1(
                 key=lambda p: p.bonus_percent or 0,
                 reverse=True,
             ),
+            "unsubscribe_url": unsubscribe_url,
+            "manage_url": manage_url,
         },
     )
 
@@ -141,24 +183,18 @@ def dispatch_day1(
     if sent:
         for promo in promos_to_send:
             record_sent(session, user_id, str(promo.id), 1)
-            if scheduler:
-                schedule_followup_days(
-                    scheduler=scheduler,
-                    session=session,
-                    user_id=user_id,
-                    promo_id=str(promo.id),
-                    day1_sent_at=now,
-                    promo_ends_at=promo.ends_at,
-                    send_callback=_send_followup_day,
-                )
 
     return sent
 
 
 def _send_followup_day(user_id: str, promo_id: str, day_number: int) -> None:
-    """Callback chamado pelo APScheduler para Dia 2 ou Dia 3."""
+    """Callback chamado pelo APScheduler para Dia 2 ou Dia 3.
+
+    DEPRECATED — Não é mais agendado. Cada promoção é enviada exatamente 1 vez
+    (day_number=1 apenas). Mantido caso jobs antigos ainda estejam na fila.
+    """
     from src.config.settings import settings
-    from src.db.models import EmailLog, Promotion, UserPreferences, create_engine_from_url, get_session_factory
+    from src.db.models import Promotion, UserPreferences, create_engine_from_url, get_session_factory
 
     engine = create_engine_from_url(settings.database_url)
     SessionFactory = get_session_factory(engine)
@@ -178,6 +214,9 @@ def _send_followup_day(user_id: str, promo_id: str, day_number: int) -> None:
         if has_sent(session, user_id, promo_id, day_number):
             return
 
+        token = str(user_pref.unsubscribe_token) if user_pref.unsubscribe_token else None
+        unsubscribe_url, manage_url = _build_email_urls(user_id, token)
+
         template = f"day{day_number}.html"
         html = _render_template(
             template,
@@ -185,6 +224,8 @@ def _send_followup_day(user_id: str, promo_id: str, day_number: int) -> None:
                 "email_title": f"Lembrete Dia {day_number} — Promoções de Milhas",
                 "header_title": f'Dia {day_number} — <span style="color:#38bdf8">Promoções Ativas</span>',
                 "active_promotions": [promo],
+                "unsubscribe_url": unsubscribe_url,
+                "manage_url": manage_url,
             },
         )
 
@@ -202,6 +243,7 @@ def dispatch_upcoming(
     user_email: str,
     future_promos: list[Any],
     scheduler: Any | None = None,
+    unsubscribe_token: str | None = None,
 ) -> bool:
     """Envia alerta de promoções futuras e agenda lembrete 24h antes de ativarem.
 
@@ -223,6 +265,8 @@ def dispatch_upcoming(
         default=None,
     )
 
+    unsubscribe_url, manage_url = _build_email_urls(user_id, unsubscribe_token)
+
     html = _render_template(
         "day1.html",
         {
@@ -235,6 +279,8 @@ def dispatch_upcoming(
                 key=lambda p: p.bonus_percent or 0,
                 reverse=True,
             ),
+            "unsubscribe_url": unsubscribe_url,
+            "manage_url": manage_url,
         },
     )
 
@@ -308,6 +354,8 @@ def _send_pre_activation_reminder(user_id: str, promo_id: str) -> None:
         if has_sent(session, user_id, promo_id, 2):
             return
 
+        token = str(user_pref.unsubscribe_token) if user_pref.unsubscribe_token else None
+        unsubscribe_url, manage_url = _build_email_urls(user_id, token)
         user_email = user_pref.email or settings.digest_recipient
 
         html = _render_template(
@@ -318,6 +366,8 @@ def _send_pre_activation_reminder(user_id: str, promo_id: str) -> None:
                 "new_promotions": [promo],
                 "best_promotion": promo if promo.bonus_percent else None,
                 "top_promotions": [promo],
+                "unsubscribe_url": unsubscribe_url,
+                "manage_url": manage_url,
             },
         )
 

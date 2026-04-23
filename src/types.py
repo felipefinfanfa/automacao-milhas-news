@@ -53,6 +53,9 @@ class TransferPair(BaseModel):
 class UserPreferencesData(BaseModel):
     user_id: str
     email: str | None = None
+    name: str | None = None
+    phone: str | None = None
+    unsubscribe_token: str | None = None
     monitored_programs: list[str] = Field(default_factory=list)
     transfer_pairs: list[TransferPair] = Field(default_factory=list)
     accumulation_programs: list[str] = Field(default_factory=list)

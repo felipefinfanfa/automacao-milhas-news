@@ -61,17 +61,19 @@
       line-height: 1.5;
     }
 
-    /* ── Email step ── */
+    /* ── Registration step ── */
     #step-email { display: block; }
     #step-prefs { display: none; }
 
-    .email-row {
+    .field-group {
       display: flex;
+      flex-direction: column;
       gap: 0.625rem;
+      margin-bottom: 0.75rem;
     }
 
-    .email-row input[type="email"] {
-      flex: 1;
+    .field-group input {
+      width: 100%;
       padding: 0.6875rem 0.875rem;
       border: 1.5px solid #e2e8f0;
       border-radius: 8px;
@@ -81,7 +83,7 @@
       outline: none;
     }
 
-    .email-row input[type="email"]:focus {
+    .field-group input:focus {
       border-color: #6366f1;
     }
 
@@ -104,7 +106,7 @@
     .btn:active { transform: scale(0.97); }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-    .btn-primary { background: #6366f1; color: white; }
+    .btn-primary { background: #6366f1; color: white; width: 100%; padding: 0.75rem; margin-top: 0.25rem; }
     .btn-primary:hover:not(:disabled) { background: #4f46e5; }
 
     .btn-save {
@@ -322,7 +324,6 @@
     /* ── Responsive ── */
     @media (max-width: 460px) {
       .programs-grid { grid-template-columns: repeat(2, 1fr); }
-      .email-row { flex-direction: column; }
       .pair-builder { flex-wrap: wrap; }
       .pair-builder select { flex: 1 1 40%; }
     }
@@ -337,19 +338,21 @@
 
 <div class="container">
 
-  <!-- ── Step 1: Email ── -->
+  <!-- ── Step 1: Cadastro ── -->
   <div id="step-email" class="card">
     <h2>Configure seus alertas</h2>
     <p class="desc">
-      Informe seu e-mail para receber notificações quando houver promoções nos
+      Preencha seus dados para receber notificações quando houver promoções nos
       programas que você escolher.
     </p>
-    <div class="email-row">
-      <input type="email" id="email-input" placeholder="seu@email.com" autocomplete="email">
-      <button class="btn btn-primary" id="btn-continue" onclick="handleEmailSubmit()">
-        Continuar
-      </button>
+    <div class="field-group">
+      <input type="text"  id="name-input"  placeholder="Seu nome completo" autocomplete="name">
+      <input type="email" id="email-input" placeholder="seu@email.com"     autocomplete="email">
+      <input type="tel"   id="phone-input" placeholder="(11) 91234-5678"   autocomplete="tel">
     </div>
+    <button class="btn btn-primary" id="btn-continue" onclick="handleRegisterSubmit()">
+      Continuar
+    </button>
     <div id="email-error" class="inline-error"></div>
   </div>
 
@@ -358,7 +361,7 @@
 
     <div class="user-bar">
       <span class="email-text" id="user-email-display"></span>
-      <button class="btn-link" onclick="resetEmail()">Alterar e-mail</button>
+      <button class="btn-link" onclick="resetEmail()">Alterar cadastro</button>
     </div>
 
     <!-- Transfer pairs -->
@@ -431,9 +434,20 @@
     buildAccumGrid();
     buildPairSelects();
 
+    // Suporta link do e-mail (?user_id=...) para abrir direto nas preferências
+    const params   = new URLSearchParams(window.location.search);
+    const uidParam = params.get('user_id');
+    if (uidParam) {
+      userId = uidParam;
+      localStorage.setItem('milesRadarUserId', uidParam);
+    }
+
     if (userId && userEmail) {
       showPrefsStep(userEmail);
       loadPreferences();
+    } else if (userId && !userEmail) {
+      // Veio do link de e-mail sem e-mail em localStorage — busca do servidor
+      loadAndShowPrefs();
     }
   }
 
@@ -509,16 +523,33 @@
     });
   }
 
-  /* ── Handle email submit ── */
-  async function handleEmailSubmit() {
-    const input   = document.getElementById('email-input');
-    const errorEl = document.getElementById('email-error');
-    const btn     = document.getElementById('btn-continue');
-    const email   = input.value.trim().toLowerCase();
+  /* ── Handle registration submit ── */
+  async function handleRegisterSubmit() {
+    const nameInput  = document.getElementById('name-input');
+    const emailInput = document.getElementById('email-input');
+    const phoneInput = document.getElementById('phone-input');
+    const errorEl    = document.getElementById('email-error');
+    const btn        = document.getElementById('btn-continue');
+
+    const name  = nameInput.value.trim();
+    const email = emailInput.value.trim().toLowerCase();
+    const phone = phoneInput.value.trim();
 
     errorEl.textContent = '';
+
+    if (!name) {
+      errorEl.textContent = 'Informe seu nome.';
+      nameInput.focus();
+      return;
+    }
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       errorEl.textContent = 'Digite um e-mail válido.';
+      emailInput.focus();
+      return;
+    }
+    if (!phone || phone.length < 7) {
+      errorEl.textContent = 'Informe um número de telefone válido.';
+      phoneInput.focus();
       return;
     }
 
@@ -529,7 +560,7 @@
       const res = await fetch('/preferences/register', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ email }),
+        body:    JSON.stringify({ name, email, phone }),
       });
 
       if (!res.ok) {
@@ -547,11 +578,33 @@
       if (!data.is_new) loadPreferences();
 
     } catch (e) {
-      errorEl.textContent = 'Erro ao conectar. Verifique sua conexão e tente novamente.';
+      errorEl.textContent = e.message || 'Erro ao conectar. Verifique sua conexão e tente novamente.';
       console.error(e);
     } finally {
       btn.disabled = false;
       btn.textContent = 'Continuar';
+    }
+  }
+
+  /* ── Load preferences from server and show step 2 (used from email link) ── */
+  async function loadAndShowPrefs() {
+    try {
+      const res = await fetch(`/preferences/${userId}`);
+      if (!res.ok) {
+        // user_id inválido ou removido — volta para step 1
+        userId = null;
+        localStorage.removeItem('milesRadarUserId');
+        return;
+      }
+      const data = await res.json();
+      if (data.email) {
+        userEmail = data.email;
+        localStorage.setItem('milesRadarEmail', data.email);
+      }
+      showPrefsStep(data.email || userId);
+      loadPreferences();
+    } catch (e) {
+      console.error('Erro ao carregar perfil:', e);
     }
   }
 
@@ -630,7 +683,7 @@
     document.getElementById('user-email-display').textContent = email;
   }
 
-  /* ── Reset email (go back to step 1) ── */
+  /* ── Reset (go back to step 1) ── */
   function resetEmail() {
     localStorage.removeItem('milesRadarUserId');
     localStorage.removeItem('milesRadarEmail');
@@ -639,7 +692,9 @@
 
     document.getElementById('step-email').style.display = 'block';
     document.getElementById('step-prefs').style.display = 'none';
+    document.getElementById('name-input').value  = '';
     document.getElementById('email-input').value = '';
+    document.getElementById('phone-input').value = '';
     document.getElementById('email-error').textContent = '';
 
     transferPairs = [];
@@ -650,9 +705,12 @@
     document.getElementById('save-error').classList.remove('show');
   }
 
-  /* ── Enter key on email input ── */
+  /* ── Enter key on last field triggers submit ── */
+  document.getElementById('phone-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleRegisterSubmit();
+  });
   document.getElementById('email-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter') handleEmailSubmit();
+    if (e.key === 'Enter') handleRegisterSubmit();
   });
 
   init();

@@ -1,5 +1,4 @@
 import uuid
-from datetime import datetime
 from typing import Any
 
 from sqlalchemy import (
@@ -9,10 +8,12 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     Numeric,
-    String,
     Text,
     UniqueConstraint,
     func,
+)
+from sqlalchemy import (
+    text as sa_text,
 )
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import DeclarativeBase, relationship
@@ -74,6 +75,14 @@ class UserPreferences(Base):
     id: Any = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id: Any = Column(UUID(as_uuid=True), nullable=False, unique=True)
     email: Any = Column(Text, nullable=True, unique=True)
+    name: Any = Column(Text, nullable=True)
+    phone: Any = Column(Text, nullable=True)
+    unsubscribe_token: Any = Column(
+        UUID(as_uuid=True),
+        nullable=False,
+        unique=True,
+        server_default=sa_text("gen_random_uuid()"),
+    )
     monitored_programs: Any = Column(JSONB, nullable=False, default=list)
     transfer_pairs: Any = Column(JSONB, nullable=False, default=list)
     accumulation_programs: Any = Column(JSONB, nullable=False, default=list)

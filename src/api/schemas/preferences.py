@@ -29,6 +29,8 @@ class UserPreferencesIn(BaseModel):
 class UserPreferencesOut(BaseModel):
     user_id: str
     email: str | None = None
+    name: str | None = None
+    phone: str | None = None
     monitored_programs: list[str]
     transfer_pairs: list[TransferPairIn]
     accumulation_programs: list[str]
@@ -42,10 +44,16 @@ class UserPreferencesOut(BaseModel):
 
 
 class RegisterIn(BaseModel):
+    name: str = Field(..., min_length=1, max_length=120)
     email: EmailStr
+    phone: str = Field(..., min_length=7, max_length=30)
+
+    model_config = {"str_strip_whitespace": True}
 
 
 class RegisterOut(BaseModel):
     user_id: str
     email: str
+    name: str | None = None
+    phone: str | None = None
     is_new: bool

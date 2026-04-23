@@ -54,16 +54,35 @@
 
           <!-- Footer -->
           <tr>
-            <td style="padding:20px 28px 28px">
+            <td style="padding:16px 28px 28px">
+              {% if manage_url or unsubscribe_url %}
+              <table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:14px">
+                <tr>
+                  {% if manage_url %}
+                  <td style="padding-right:8px">
+                    <a href="{{ manage_url }}"
+                       style="display:inline-block;background:#e0f2fe;color:#0369a1;font-size:12px;font-weight:600;text-decoration:none;padding:8px 16px;border-radius:8px;border:1px solid #bae6fd">
+                      Gerenciar prefer&ecirc;ncias
+                    </a>
+                  </td>
+                  {% endif %}
+                  {% if unsubscribe_url %}
+                  <td>
+                    <a href="{{ unsubscribe_url }}"
+                       style="display:inline-block;background:#fef2f2;color:#dc2626;font-size:12px;font-weight:600;text-decoration:none;padding:8px 16px;border-radius:8px;border:1px solid #fecaca">
+                      Cancelar inscri&ccedil;&atilde;o e excluir perfil
+                    </a>
+                  </td>
+                  {% endif %}
+                </tr>
+              </table>
+              {% endif %}
               <table width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
                   <td style="font-size:11px;color:#94a3b8;line-height:1.6">
                     Gerado automaticamente pelo <strong style="color:#64748b">Miles Radar</strong>.
-                    Os dados são baseados em informações públicas e podem conter imprecisões —
+                    Os dados s&atilde;o baseados em informa&ccedil;&otilde;es p&uacute;blicas e podem conter imprecis&otilde;es &mdash;
                     confira sempre nas fontes originais antes de transferir pontos.
-                    {% if unsubscribe_url %}
-                    · <a href="{{ unsubscribe_url }}" style="color:#94a3b8">Cancelar inscrição</a>
-                    {% endif %}
                   </td>
                   <td style="text-align:right;vertical-align:middle;padding-left:16px;white-space:nowrap">
                     <span style="font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#cbd5e1">

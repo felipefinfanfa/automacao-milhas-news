@@ -81,6 +81,11 @@ def load_all_preferences(session: Any) -> list[UserPreferencesData]:
             UserPreferencesData(
                 user_id=str(row.user_id),
                 email=row.email,
+                name=row.name,
+                phone=row.phone,
+                unsubscribe_token=(
+                    str(row.unsubscribe_token) if row.unsubscribe_token else None
+                ),
                 monitored_programs=row.monitored_programs or [],
                 transfer_pairs=pairs,
                 accumulation_programs=row.accumulation_programs or [],
