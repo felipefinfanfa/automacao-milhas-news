@@ -19,11 +19,23 @@ services:
       target: runtime
     env_file: .env
     restart: unless-stopped
-    ports:
-      - "8000:8000"
+    networks:
+      - felipefinfanfanet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=felipefinfanfanet"
+      - "traefik.http.routers.miles-radar.rule=Host(`milhas.felipefinfanfa.com.br`)"
+      - "traefik.http.routers.miles-radar.entrypoints=websecure"
+      - "traefik.http.routers.miles-radar.tls.certresolver=letsencryptresolver"
+      - "traefik.http.services.miles-radar.loadbalancer.server.port=8000"
+      - "traefik.http.services.miles-radar.loadbalancer.passHostHeader=true"
     command: uvicorn src.api.main:app --host 0.0.0.0 --port 8000
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
+
+networks:
+  felipefinfanfanet:
+    external: true
