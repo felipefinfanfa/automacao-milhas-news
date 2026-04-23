@@ -20,10 +20,10 @@ services:
     env_file: .env
     restart: unless-stopped
     networks:
-      - felipefinfanfanet
+      - miles-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=felipefinfanfanet"
+      - "traefik.docker.network=miles-proxy"
       - "traefik.http.routers.miles-radar.rule=Host(`milhas.felipefinfanfa.com.br`)"
       - "traefik.http.routers.miles-radar.entrypoints=websecure"
       - "traefik.http.routers.miles-radar.tls.certresolver=letsencryptresolver"
@@ -37,5 +37,5 @@ services:
         max-file: "3"
 
 networks:
-  felipefinfanfanet:
+  miles-proxy:
     external: true
