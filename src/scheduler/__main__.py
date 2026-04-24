@@ -20,7 +20,7 @@ from src.config.settings import settings
 from src.db.models import create_engine_from_url, get_session_factory
 
 logging.basicConfig(
-    level=settings.log_level,
+    level=settings.log_level.upper(),
     format="%(asctime)s %(levelname)-8s %(name)s — %(message)s",
 )
 logger = logging.getLogger(__name__)
