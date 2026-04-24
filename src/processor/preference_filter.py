@@ -5,6 +5,7 @@ Par de transferência é ordenado e não-comutativo: Esfera→Smiles ≠ Smiles�
 from __future__ import annotations
 
 import logging
+from datetime import datetime, timezone
 from typing import Any
 
 from src.types import PromotionData, TransferPair, UserPreferencesData
@@ -41,13 +42,16 @@ def filter_for_user(
     promos: list[PromotionData],
     prefs: UserPreferencesData,
 ) -> list[PromotionData]:
-    """Retorna somente as promoções que batem com as preferências do usuário."""
-    matched = [p for p in promos if matches_preferences(p, prefs)]
+    """Retorna somente as promoções ativas que batem com as preferências do usuário."""
+    now = datetime.now(timezone.utc)
+    active = [p for p in promos if p.ends_at is None or p.ends_at > now]
+    matched = [p for p in active if matches_preferences(p, prefs)]
     logger.debug(
-        "preference_filter user=%s: %d/%d promos passaram",
+        "preference_filter user=%s: %d/%d promos passaram (%d expiradas descartadas)",
         str(prefs.user_id)[:8],
         len(matched),
         len(promos),
+        len(promos) - len(active),
     )
     return matched
 

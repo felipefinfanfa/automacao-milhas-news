@@ -10,6 +10,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Any
 
+from src.config.settings import ACCUMULATION_PROGRAMS, VALID_TRANSFER_PAIRS
 from src.integrations.user_agents import rotate_ua
 from src.monitors.direct_scraper import scan_all_programs
 from src.monitors.google_news import scan_google_news
@@ -21,6 +22,16 @@ from src.processor.preference_filter import filter_for_all_users, load_all_prefe
 from src.types import PromotionData
 
 logger = logging.getLogger(__name__)
+
+
+def _is_relevant_promo(promo: PromotionData) -> bool:
+    """Descarta promoções fora dos pares de transferência e programas de acúmulo monitorados."""
+    if promo.promo_type == "transfer_bonus":
+        origin = (promo.origin_program or promo.source_program or "").lower()
+        dest = (promo.destination_program or "").lower()
+        return (origin, dest) in VALID_TRANSFER_PAIRS
+    program = (promo.origin_program or promo.source_program or "").lower()
+    return program in ACCUMULATION_PROGRAMS
 
 
 def run_tier1(
@@ -57,8 +68,11 @@ def run_tier1(
 
     logger.info("Tier 1: %d promoções extraídas antes de dedup", len(raw_promos))
 
+    raw_promos = [p for p in raw_promos if _is_relevant_promo(p)]
+    logger.info("Tier 1: %d promoções após filtro de pares/programas válidos", len(raw_promos))
+
     if not raw_promos:
-        logger.info("Tier 1: nenhuma promoção extraída, encerrando")
+        logger.info("Tier 1: nenhuma promoção relevante extraída, encerrando")
         return []
 
     dedup_results = dedup_batch(session, raw_promos)
@@ -96,11 +110,11 @@ def _dispatch_emails(session: Any, new_promos_data: list[PromotionData], schedul
         .all()
     )
 
-    # Descarta promoções expiradas
-    new_db_promos = [
-        p for p in new_db_promos
-        if p.ends_at is None or p.ends_at > now
-    ]
+    # Nunca enviar e-mail de promoção expirada
+    before = len(new_db_promos)
+    new_db_promos = [p for p in new_db_promos if p.ends_at is None or p.ends_at > now]
+    if before != len(new_db_promos):
+        logger.info("Tier 1: %d promoção(ões) descartada(s) por expiração", before - len(new_db_promos))
 
     # Mantém apenas transferências bonificadas com % definido
     new_db_promos = [

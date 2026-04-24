@@ -5,3 +5,6 @@ dist
 snapshots
 *.log
 .git
+.claude/skills/
+SKILL.md
+docker-compose.local.yml

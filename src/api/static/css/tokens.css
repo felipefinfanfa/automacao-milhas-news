@@ -1,0 +1,197 @@
+/*
+ * Miles Radar — Design Tokens
+ * Baseado no Design System Fin Fanfa.
+ * Fonte: Arimo Variable (arquivos locais em assets/fonts/)
+ */
+
+@font-face {
+  font-family: 'Arimo';
+  src: url('../assets/fonts/Arimo-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Arimo';
+  src: url('../assets/fonts/Arimo-Italic-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* ─────────────────────────────────────────────
+   1. CORES — DARK THEME
+   ───────────────────────────────────────────── */
+:root {
+  /* Backgrounds dark */
+  --bg-base:        #050508;   /* fundo principal — quase preto */
+  --bg-surface:     #0e0e14;   /* superfície de card */
+  --bg-elevated:    #14141c;   /* painéis elevados */
+  --bg-overlay:     rgba(5, 5, 8, 0.85);
+  --bg-ink:         #141414;
+
+  /* Borders dark */
+  --border:         #1c1c28;
+  --border-subtle:  #141420;
+  --border-active:  rgba(45, 212, 240, 0.25);
+  --border-focus:   #2dd4f0;
+
+  /* Foreground / Texto (sobre fundo escuro) */
+  --fg-1:           #ffffff;
+  --fg-2:           #9090a8;
+  --fg-3:           #484860;
+  --fg-inverse:     #050508;
+
+  /* Brand Cyan — Destaque principal */
+  --cyan-50:        #e8fbfe;
+  --cyan-100:       #c2f4fb;
+  --cyan-200:       #85e9f6;
+  --cyan-300:       #2dd4f0;   /* PRIMÁRIO */
+  --cyan-400:       #0bbcd8;   /* hover */
+  --cyan-500:       #089db8;   /* pressionado */
+  --cyan-600:       #057b91;
+
+  /* Ink */
+  --ink-100:        #141414;
+  --ink-80:         #3a3a3a;
+  --ink-60:         #666666;
+  --ink-20:         #cccccc;
+
+  /* Aliases semânticos */
+  --color-primary:       var(--cyan-300);
+  --color-primary-hover: var(--cyan-400);
+  --color-primary-press: var(--cyan-500);
+
+  /* Feedback */
+  --color-success:  #22c55e;
+  --color-warning:  #f59e0b;
+  --color-error:    #ef4444;
+  --color-info:     var(--cyan-300);
+
+  --surface-success: rgba(34, 197, 94,  0.12);
+  --surface-warning: rgba(245, 158, 11, 0.12);
+  --surface-error:   rgba(239, 68, 68,  0.12);
+  --surface-info:    rgba(45, 212, 240, 0.12);
+}
+
+
+/* ─────────────────────────────────────────────
+   2. TIPOGRAFIA
+   ───────────────────────────────────────────── */
+:root {
+  --font-display: 'Arimo', sans-serif;
+  --font-body:    'Arimo', sans-serif;
+  --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
+
+  --text-xs:    0.75rem;
+  --text-sm:    0.875rem;
+  --text-base:  1rem;
+  --text-lg:    1.125rem;
+  --text-xl:    1.25rem;
+  --text-2xl:   1.5rem;
+  --text-3xl:   1.875rem;
+  --text-4xl:   2.25rem;
+  --text-5xl:   3rem;
+  --text-6xl:   3.75rem;
+  --text-7xl:   4.5rem;
+  --text-8xl:   6rem;
+
+  --weight-regular:     400;
+  --weight-medium:      500;
+  --weight-semibold:    600;
+  --weight-bold:        700;
+
+  --leading-tight:    1.1;
+  --leading-snug:     1.25;
+  --leading-normal:   1.5;
+  --leading-relaxed:  1.65;
+
+  --tracking-tighter: -0.03em;
+  --tracking-tight:   -0.01em;
+  --tracking-normal:   0em;
+  --tracking-wide:     0.06em;
+  --tracking-wider:    0.12em;
+  --tracking-widest:   0.2em;
+}
+
+
+/* ─────────────────────────────────────────────
+   3. ESPAÇAMENTO
+   ───────────────────────────────────────────── */
+:root {
+  --space-1:    4px;
+  --space-2:    8px;
+  --space-3:    12px;
+  --space-4:    16px;
+  --space-5:    20px;
+  --space-6:    24px;
+  --space-8:    32px;
+  --space-10:   40px;
+  --space-12:   48px;
+  --space-16:   64px;
+  --space-20:   80px;
+  --space-24:   96px;
+  --space-32:   128px;
+
+  --radius-none: 0px;
+  --radius-xs:   2px;
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   10px;
+  --radius-xl:   16px;
+  --radius-full: 9999px;
+
+  --max-width:       1280px;
+  --content-width:   860px;
+  --nav-height:      64px;
+}
+
+
+/* ─────────────────────────────────────────────
+   4. SOMBRAS
+   ───────────────────────────────────────────── */
+:root {
+  --shadow-none: none;
+  --shadow-sm:   0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md:   0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg:   0 8px 40px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 24px rgba(45, 212, 240, 0.25);
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.04) inset,
+                 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+
+/* ─────────────────────────────────────────────
+   5. BASE HTML
+   ───────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-normal);
+  color: var(--fg-1);
+  background-color: var(--bg-base);
+}
+
+a {
+  color: var(--fg-2);
+  text-decoration: none;
+  transition: color 200ms ease;
+}
+a:hover {
+  color: var(--color-primary);
+}

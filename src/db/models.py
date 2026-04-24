@@ -153,4 +153,4 @@ def get_session_factory(engine: Any) -> Any:
 def create_engine_from_url(database_url: str) -> Any:
     from sqlalchemy import create_engine
 
-    return create_engine(database_url, pool_pre_ping=True, pool_size=5, max_overflow=10)
+    return create_engine(database_url, pool_pre_ping=True, pool_size=3, max_overflow=5)

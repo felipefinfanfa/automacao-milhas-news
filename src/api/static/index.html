@@ -3,373 +3,127 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Miles Radar — Configurar Alertas</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-      background: #f1f5f9;
-      color: #1e293b;
-      min-height: 100vh;
-    }
-
-    header {
-      background: #0f172a;
-      color: white;
-      padding: 1.5rem 1rem;
-      text-align: center;
-    }
-
-    header h1 {
-      font-size: 1.625rem;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-    }
-
-    header p {
-      color: #94a3b8;
-      margin-top: 0.375rem;
-      font-size: 0.875rem;
-    }
-
-    .container {
-      max-width: 580px;
-      margin: 2rem auto;
-      padding: 0 1rem 3rem;
-    }
-
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 1.75rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
-      margin-bottom: 1.25rem;
-    }
-
-    .card h2 {
-      font-size: 1rem;
-      font-weight: 700;
-      color: #0f172a;
-      margin-bottom: 0.375rem;
-    }
-
-    .card .desc {
-      font-size: 0.8125rem;
-      color: #64748b;
-      margin-bottom: 1.25rem;
-      line-height: 1.5;
-    }
-
-    /* ── Registration step ── */
-    #step-email { display: block; }
-    #step-prefs { display: none; }
-
-    .field-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.625rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .field-group input {
-      width: 100%;
-      padding: 0.6875rem 0.875rem;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 8px;
-      font-size: 0.9375rem;
-      color: #1e293b;
-      transition: border-color 0.15s;
-      outline: none;
-    }
-
-    .field-group input:focus {
-      border-color: #6366f1;
-    }
-
-    /* ── Buttons ── */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.375rem;
-      padding: 0.6875rem 1.25rem;
-      border: none;
-      border-radius: 8px;
-      font-size: 0.9375rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: opacity 0.15s, transform 0.1s;
-      white-space: nowrap;
-    }
-
-    .btn:active { transform: scale(0.97); }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-    .btn-primary { background: #6366f1; color: white; width: 100%; padding: 0.75rem; margin-top: 0.25rem; }
-    .btn-primary:hover:not(:disabled) { background: #4f46e5; }
-
-    .btn-save {
-      background: #10b981;
-      color: white;
-      width: 100%;
-      padding: 0.875rem;
-      font-size: 1rem;
-      margin-top: 0.25rem;
-    }
-
-    .btn-save:hover:not(:disabled) { background: #059669; }
-
-    .btn-sm {
-      padding: 0.5rem 0.875rem;
-      font-size: 0.875rem;
-    }
-
-    /* ── User bar ── */
-    .user-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.75rem;
-      padding: 0.75rem 1rem;
-      background: #eef2ff;
-      border: 1px solid #c7d2fe;
-      border-radius: 10px;
-      margin-bottom: 1.25rem;
-    }
-
-    .user-bar .email-text {
-      font-size: 0.875rem;
-      color: #4338ca;
-      font-weight: 500;
-      word-break: break-all;
-    }
-
-    .btn-link {
-      background: none;
-      border: none;
-      color: #6366f1;
-      font-size: 0.8125rem;
-      font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
-      padding: 0;
-      text-decoration: underline;
-    }
-
-    /* ── Programs grid ── */
-    .programs-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.625rem;
-    }
-
-    .prog-chip {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.625rem 0.75rem;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 8px;
-      cursor: pointer;
-      user-select: none;
-      transition: border-color 0.15s, background 0.15s;
-      background: white;
-    }
-
-    .prog-chip:hover { border-color: #cbd5e1; }
-
-    .prog-chip.selected {
-      border-color: var(--prog-color);
-      background: var(--prog-bg);
-    }
-
-    .prog-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: #cbd5e1;
-      flex-shrink: 0;
-      transition: background 0.15s;
-    }
-
-    .prog-chip.selected .prog-dot {
-      background: var(--prog-color);
-    }
-
-    .prog-name {
-      font-size: 0.8125rem;
-      font-weight: 600;
-      color: #475569;
-      line-height: 1.2;
-    }
-
-    /* ── Transfer pairs ── */
-    .pair-builder {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .pair-builder select {
-      flex: 1;
-      min-width: 0;
-      padding: 0.625rem 2rem 0.625rem 0.75rem;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 8px;
-      font-size: 0.875rem;
-      color: #1e293b;
-      background: white;
-      cursor: pointer;
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 0.625rem center;
-      outline: none;
-      transition: border-color 0.15s;
-    }
-
-    .pair-builder select:focus { border-color: #6366f1; }
-
-    .pair-arrow {
-      color: #94a3b8;
-      font-size: 1.125rem;
-      flex-shrink: 0;
-      font-weight: 700;
-    }
-
-    .pairs-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      min-height: 1px;
-    }
-
-    .pairs-empty {
-      font-size: 0.8125rem;
-      color: #94a3b8;
-      font-style: italic;
-    }
-
-    .pair-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.375rem 0.625rem 0.375rem 0.75rem;
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #334155;
-    }
-
-    .pair-tag button {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 18px;
-      height: 18px;
-      background: #cbd5e1;
-      border: none;
-      border-radius: 50%;
-      color: #475569;
-      cursor: pointer;
-      font-size: 0.875rem;
-      line-height: 1;
-      padding: 0;
-      transition: background 0.15s;
-    }
-
-    .pair-tag button:hover { background: #f87171; color: white; }
-
-    /* ── Feedback messages ── */
-    .msg {
-      display: none;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
-      font-size: 0.875rem;
-      font-weight: 500;
-      margin-top: 1rem;
-    }
-
-    .msg.show { display: flex; }
-
-    .msg-success { background: #f0fdf4; border: 1px solid #86efac; color: #166534; }
-    .msg-error   { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
-
-    .inline-error {
-      font-size: 0.8125rem;
-      color: #dc2626;
-      margin-top: 0.5rem;
-    }
-
-    /* ── Spinner ── */
-    .spinner {
-      display: inline-block;
-      width: 15px;
-      height: 15px;
-      border: 2px solid rgba(255,255,255,0.35);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.65s linear infinite;
-      flex-shrink: 0;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ── Responsive ── */
-    @media (max-width: 460px) {
-      .programs-grid { grid-template-columns: repeat(2, 1fr); }
-      .pair-builder { flex-wrap: wrap; }
-      .pair-builder select { flex: 1 1 40%; }
-    }
-  </style>
+  <title>Radar de Milhas — Alertas de Promoções</title>
+  <meta name="description" content="Monitoramento em tempo real de promoções de transferência e acúmulo de milhas nos programas brasileiros.">
+  <link rel="stylesheet" href="/static/css/tokens.css">
+  <link rel="stylesheet" href="/static/css/app.css">
 </head>
 <body>
 
-<header>
-  <h1>Miles Radar</h1>
-  <p>Alertas de promoções de transferência e acúmulo de milhas</p>
-</header>
+<!-- ═══════════════════════════════════════════
+     NAVBAR
+     ═══════════════════════════════════════════ -->
+<nav class="navbar" id="navbar">
+  <a href="/" class="navbar-brand">
+    <img src="/static/assets/images/accent-bars.png" alt="Fin Fanfa" class="navbar-logo">
+  </a>
+  <span class="navbar-tagline">Radar de Milhas</span>
+</nav>
 
-<div class="container">
 
-  <!-- ── Step 1: Cadastro ── -->
-  <div id="step-email" class="card">
-    <h2>Configure seus alertas</h2>
-    <p class="desc">
-      Preencha seus dados para receber notificações quando houver promoções nos
-      programas que você escolher.
-    </p>
-    <div class="field-group">
-      <input type="text"  id="name-input"  placeholder="Seu nome completo" autocomplete="name">
-      <input type="email" id="email-input" placeholder="seu@email.com"     autocomplete="email">
-      <input type="tel"   id="phone-input" placeholder="(11) 91234-5678"   autocomplete="tel">
-    </div>
-    <button class="btn btn-primary" id="btn-continue" onclick="handleRegisterSubmit()">
-      Continuar
-    </button>
-    <div id="email-error" class="inline-error"></div>
+<!-- ═══════════════════════════════════════════
+     HERO
+     ═══════════════════════════════════════════ -->
+<section class="hero">
+
+  <!-- Vídeo de fundo (toca uma vez, muito suave) -->
+  <div class="hero-video-wrap" aria-hidden="true">
+    <video
+      class="hero-video"
+      src="/static/assets/videos/hero-bg.mp4"
+      autoplay
+      muted
+      playsinline
+      preload="auto"
+    ></video>
+    <div class="hero-video-overlay"></div>
   </div>
 
-  <!-- ── Step 2: Preferences ── -->
+  <div class="hero-content">
+    <div class="hero-eyebrow">Monitoramento de Milhas</div>
+
+    <h1 class="hero-title">
+      Radar de<br><span>Milhas.</span>
+    </h1>
+
+    <p class="hero-subtitle">
+      Nunca perca uma promoção de transferência ou acúmulo.
+      Alertas automáticos para os programas que você escolher.
+    </p>
+
+    <a href="#form-anchor" class="hero-cta" onclick="scrollToForm(); return false;">
+      Configurar Alertas
+      <svg class="hero-cta-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+    </a>
+
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-number">6</div>
+        <div class="hero-stat-label">Programas</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-number">6×</div>
+        <div class="hero-stat-label">Varreduras por dia</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-number">&lt;1h</div>
+        <div class="hero-stat-label">Tempo de alerta</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<hr class="section-divider">
+
+
+<!-- ═══════════════════════════════════════════
+     FORM SECTION
+     ═══════════════════════════════════════════ -->
+<div id="form-anchor"></div>
+<section class="form-section">
+
+  <!-- ── Step 1: Cadastro ── -->
+  <div id="step-email" class="reveal">
+    <p class="section-label">Passo 1 de 2</p>
+    <h2 class="section-title">Seus Dados</h2>
+    <p class="section-desc">
+      Preencha seus dados para criar sua conta.
+      Você só poderá configurar as preferências depois desta etapa.
+    </p>
+
+    <div class="card">
+      <div class="field-group">
+        <input type="text"  id="name-input"  placeholder="Nome completo"     autocomplete="name">
+        <input type="email" id="email-input" placeholder="seu@email.com"      autocomplete="email">
+        <input type="tel"   id="phone-input" placeholder="(11) 91234-5678"    autocomplete="tel">
+      </div>
+      <button class="btn btn-primary" id="btn-continue" onclick="handleRegisterSubmit()">
+        Continuar
+      </button>
+      <div id="email-error" class="inline-error"></div>
+    </div>
+  </div>
+
+  <!-- ── Step 2: Preferências (só aparece após cadastro) ── -->
   <div id="step-prefs">
 
+    <p class="section-label">Passo 2 de 2</p>
+    <h2 class="section-title">Preferências</h2>
+    <p class="section-desc">
+      Escolha os programas e pares de transferência que deseja monitorar.
+    </p>
+
     <div class="user-bar">
-      <span class="email-text" id="user-email-display"></span>
-      <button class="btn-link" onclick="resetEmail()">Alterar cadastro</button>
+      <span class="user-bar-email" id="user-email-display"></span>
+      <button class="btn-link" onclick="resetEmail()">Alterar dados</button>
     </div>
 
-    <!-- Transfer pairs -->
-    <div class="card">
-      <h2>Pares de Transferência</h2>
-      <p class="desc">
-        Adicione os pares em que quer receber alertas de bônus de transferência.
-        O par é <strong>ordenado</strong> — Smiles&nbsp;→&nbsp;Azul é diferente de Azul&nbsp;→&nbsp;Smiles.
+    <!-- Pares de Transferência -->
+    <div class="card reveal">
+      <div class="card-title">Pares de Transferência</div>
+      <p class="card-desc">
+        Par ordenado — Smiles&nbsp;→&nbsp;Azul é diferente de Azul&nbsp;→&nbsp;Smiles.
       </p>
 
       <div class="pair-builder">
@@ -380,9 +134,7 @@
         <select id="pair-dest" aria-label="Programa destino">
           <option value="">Para…</option>
         </select>
-        <button class="btn btn-primary btn-sm" onclick="addPair()" title="Adicionar par">
-          + Adicionar
-        </button>
+        <button class="btn btn-sm" onclick="addPair()">+ Add</button>
       </div>
 
       <div id="pairs-list" class="pairs-list">
@@ -390,330 +142,38 @@
       </div>
     </div>
 
-    <!-- Accumulation programs -->
-    <div class="card">
-      <h2>Acúmulo de Pontos</h2>
-      <p class="desc">
-        Receba alertas de promoções de acúmulo (campanhas de cartão, compras com
-        bônus) nesses programas.
+    <!-- Acúmulo de Pontos -->
+    <div class="card reveal">
+      <div class="card-title">Acúmulo de Pontos</div>
+      <p class="card-desc">
+        Alertas de promoções de acúmulo: campanhas de cartão, compras com bônus.
       </p>
       <div class="programs-grid" id="accum-grid"></div>
     </div>
 
-    <!-- Save -->
-    <div class="card">
+    <!-- Salvar -->
+    <div class="card reveal">
       <button class="btn btn-save" id="btn-save" onclick="savePreferences()">
         Salvar Preferências
       </button>
       <div id="save-success" class="msg msg-success">
-        ✓ Preferências salvas! Você receberá alertas em até 1&nbsp;h de qualquer nova promoção.
+        Preferências salvas. Você receberá alertas em até 1 h de qualquer nova promoção.
       </div>
       <div id="save-error" class="msg msg-error"></div>
     </div>
 
-  </div><!-- /step-prefs -->
-</div><!-- /container -->
+  </div>
+</section>
 
-<script>
-  const PROGRAMS = [
-    { id: 'smiles', name: 'Smiles',      color: '#f97316', bg: '#fff7ed' },
-    { id: 'latam',  name: 'LATAM Pass',  color: '#dc2626', bg: '#fef2f2' },
-    { id: 'azul',   name: 'Azul',        color: '#2563eb', bg: '#eff6ff' },
-    { id: 'livelo', name: 'Livelo',      color: '#7c3aed', bg: '#f5f3ff' },
-    { id: 'esfera', name: 'Esfera',      color: '#0ea5e9', bg: '#f0f9ff' },
-    { id: 'iupp',   name: 'Iupp',        color: '#16a34a', bg: '#f0fdf4' },
-  ];
 
-  let userId    = localStorage.getItem('milesRadarUserId');
-  let userEmail = localStorage.getItem('milesRadarEmail');
-  let selectedAccum  = new Set();
-  let transferPairs  = [];
+<!-- ═══════════════════════════════════════════
+     FOOTER
+     ═══════════════════════════════════════════ -->
+<footer class="site-footer">
+  <p>Radar de Milhas &mdash; Monitoramento de promoções</p>
+</footer>
 
-  /* ── Bootstrap ── */
-  function init() {
-    buildAccumGrid();
-    buildPairSelects();
 
-    // Suporta link do e-mail (?user_id=...) para abrir direto nas preferências
-    const params   = new URLSearchParams(window.location.search);
-    const uidParam = params.get('user_id');
-    if (uidParam) {
-      userId = uidParam;
-      localStorage.setItem('milesRadarUserId', uidParam);
-    }
-
-    if (userId && userEmail) {
-      showPrefsStep(userEmail);
-      loadPreferences();
-    } else if (userId && !userEmail) {
-      // Veio do link de e-mail sem e-mail em localStorage — busca do servidor
-      loadAndShowPrefs();
-    }
-  }
-
-  /* ── Build accumulation grid ── */
-  function buildAccumGrid() {
-    const grid = document.getElementById('accum-grid');
-    PROGRAMS.forEach(p => {
-      const chip = document.createElement('div');
-      chip.className = 'prog-chip';
-      chip.dataset.id = p.id;
-      chip.style.setProperty('--prog-color', p.color);
-      chip.style.setProperty('--prog-bg',    p.bg);
-      chip.innerHTML = `<span class="prog-dot"></span><span class="prog-name">${p.name}</span>`;
-      chip.addEventListener('click', () => toggleAccum(p.id, chip));
-      grid.appendChild(chip);
-    });
-  }
-
-  /* ── Build pair selects ── */
-  function buildPairSelects() {
-    const src = document.getElementById('pair-source');
-    const dst = document.getElementById('pair-dest');
-    PROGRAMS.forEach(p => {
-      src.insertAdjacentHTML('beforeend', `<option value="${p.id}">${p.name}</option>`);
-      dst.insertAdjacentHTML('beforeend', `<option value="${p.id}">${p.name}</option>`);
-    });
-  }
-
-  /* ── Toggle accumulation chip ── */
-  function toggleAccum(id, chip) {
-    if (selectedAccum.has(id)) {
-      selectedAccum.delete(id);
-      chip.classList.remove('selected');
-    } else {
-      selectedAccum.add(id);
-      chip.classList.add('selected');
-    }
-  }
-
-  /* ── Add transfer pair ── */
-  function addPair() {
-    const src = document.getElementById('pair-source').value;
-    const dst = document.getElementById('pair-dest').value;
-    if (!src || !dst || src === dst) return;
-    if (transferPairs.some(p => p.source === src && p.dest === dst)) return;
-    transferPairs.push({ source: src, dest: dst });
-    renderPairs();
-  }
-
-  /* ── Remove transfer pair ── */
-  function removePair(idx) {
-    transferPairs.splice(idx, 1);
-    renderPairs();
-  }
-
-  /* ── Render pairs list ── */
-  function renderPairs() {
-    const list = document.getElementById('pairs-list');
-    list.innerHTML = '';
-
-    if (transferPairs.length === 0) {
-      list.innerHTML = '<span class="pairs-empty">Nenhum par adicionado.</span>';
-      return;
-    }
-
-    transferPairs.forEach((pair, idx) => {
-      const srcName = PROGRAMS.find(p => p.id === pair.source)?.name ?? pair.source;
-      const dstName = PROGRAMS.find(p => p.id === pair.dest)?.name   ?? pair.dest;
-      const tag = document.createElement('div');
-      tag.className = 'pair-tag';
-      tag.innerHTML = `${srcName} → ${dstName}<button onclick="removePair(${idx})" title="Remover">×</button>`;
-      list.appendChild(tag);
-    });
-  }
-
-  /* ── Handle registration submit ── */
-  async function handleRegisterSubmit() {
-    const nameInput  = document.getElementById('name-input');
-    const emailInput = document.getElementById('email-input');
-    const phoneInput = document.getElementById('phone-input');
-    const errorEl    = document.getElementById('email-error');
-    const btn        = document.getElementById('btn-continue');
-
-    const name  = nameInput.value.trim();
-    const email = emailInput.value.trim().toLowerCase();
-    const phone = phoneInput.value.trim();
-
-    errorEl.textContent = '';
-
-    if (!name) {
-      errorEl.textContent = 'Informe seu nome.';
-      nameInput.focus();
-      return;
-    }
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errorEl.textContent = 'Digite um e-mail válido.';
-      emailInput.focus();
-      return;
-    }
-    if (!phone || phone.length < 7) {
-      errorEl.textContent = 'Informe um número de telefone válido.';
-      phoneInput.focus();
-      return;
-    }
-
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span>';
-
-    try {
-      const res = await fetch('/preferences/register', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ name, email, phone }),
-      });
-
-      if (!res.ok) {
-        const detail = await res.json().catch(() => ({}));
-        throw new Error(detail?.detail ?? 'Erro desconhecido');
-      }
-
-      const data = await res.json();
-      userId    = data.user_id;
-      userEmail = email;
-      localStorage.setItem('milesRadarUserId', data.user_id);
-      localStorage.setItem('milesRadarEmail',  email);
-
-      showPrefsStep(email);
-      if (!data.is_new) loadPreferences();
-
-    } catch (e) {
-      errorEl.textContent = e.message || 'Erro ao conectar. Verifique sua conexão e tente novamente.';
-      console.error(e);
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Continuar';
-    }
-  }
-
-  /* ── Load preferences from server and show step 2 (used from email link) ── */
-  async function loadAndShowPrefs() {
-    try {
-      const res = await fetch(`/preferences/${userId}`);
-      if (!res.ok) {
-        // user_id inválido ou removido — volta para step 1
-        userId = null;
-        localStorage.removeItem('milesRadarUserId');
-        return;
-      }
-      const data = await res.json();
-      if (data.email) {
-        userEmail = data.email;
-        localStorage.setItem('milesRadarEmail', data.email);
-      }
-      showPrefsStep(data.email || userId);
-      loadPreferences();
-    } catch (e) {
-      console.error('Erro ao carregar perfil:', e);
-    }
-  }
-
-  /* ── Load existing preferences ── */
-  async function loadPreferences() {
-    try {
-      const res = await fetch(`/preferences/${userId}`);
-      if (!res.ok) return;
-
-      const data = await res.json();
-
-      transferPairs = (data.transfer_pairs ?? []).filter(p => p.source && p.dest);
-      renderPairs();
-
-      selectedAccum = new Set(data.accumulation_programs ?? []);
-      document.querySelectorAll('#accum-grid .prog-chip').forEach(chip => {
-        chip.classList.toggle('selected', selectedAccum.has(chip.dataset.id));
-      });
-
-    } catch (e) {
-      console.error('Erro ao carregar preferências:', e);
-    }
-  }
-
-  /* ── Save preferences ── */
-  async function savePreferences() {
-    const btn       = document.getElementById('btn-save');
-    const successEl = document.getElementById('save-success');
-    const errorEl   = document.getElementById('save-error');
-
-    successEl.classList.remove('show');
-    errorEl.classList.remove('show');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> Salvando…';
-
-    const allPrograms = new Set([
-      ...transferPairs.flatMap(p => [p.source, p.dest]),
-      ...selectedAccum,
-    ]);
-
-    const payload = {
-      monitored_programs:    [...allPrograms],
-      transfer_pairs:        transferPairs,
-      accumulation_programs: [...selectedAccum],
-    };
-
-    try {
-      const res = await fetch(`/preferences/${userId}`, {
-        method:  'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const detail = await res.json().catch(() => ({}));
-        throw new Error(detail?.detail ?? 'Erro ao salvar');
-      }
-
-      successEl.classList.add('show');
-      successEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-    } catch (e) {
-      errorEl.textContent = e.message ?? 'Erro ao salvar. Tente novamente.';
-      errorEl.classList.add('show');
-      console.error(e);
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Salvar Preferências';
-    }
-  }
-
-  /* ── Show preferences step ── */
-  function showPrefsStep(email) {
-    document.getElementById('step-email').style.display = 'none';
-    document.getElementById('step-prefs').style.display = 'block';
-    document.getElementById('user-email-display').textContent = email;
-  }
-
-  /* ── Reset (go back to step 1) ── */
-  function resetEmail() {
-    localStorage.removeItem('milesRadarUserId');
-    localStorage.removeItem('milesRadarEmail');
-    userId = null;
-    userEmail = null;
-
-    document.getElementById('step-email').style.display = 'block';
-    document.getElementById('step-prefs').style.display = 'none';
-    document.getElementById('name-input').value  = '';
-    document.getElementById('email-input').value = '';
-    document.getElementById('phone-input').value = '';
-    document.getElementById('email-error').textContent = '';
-
-    transferPairs = [];
-    selectedAccum = new Set();
-    renderPairs();
-    document.querySelectorAll('.prog-chip').forEach(c => c.classList.remove('selected'));
-    document.getElementById('save-success').classList.remove('show');
-    document.getElementById('save-error').classList.remove('show');
-  }
-
-  /* ── Enter key on last field triggers submit ── */
-  document.getElementById('phone-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter') handleRegisterSubmit();
-  });
-  document.getElementById('email-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter') handleRegisterSubmit();
-  });
-
-  init();
-</script>
+<script src="/static/js/app.js"></script>
 </body>
 </html>

@@ -5,7 +5,7 @@ import uuid
 from textwrap import dedent
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
@@ -16,18 +16,17 @@ from src.api.schemas.preferences import (
     UserPreferencesOut,
 )
 from src.config.settings import LOYALTY_PROGRAMS, settings
-from src.db.models import UserPreferences
+from src.db.models import UserPreferences, create_engine_from_url, get_session_factory
 
 router = APIRouter(prefix="/preferences", tags=["preferences"])
 
+# Engine e session factory criados uma vez — evita estourar o pool do Supabase free tier
+_engine = create_engine_from_url(settings.database_url)
+_SessionFactory = get_session_factory(_engine)
+
 
 def _get_session() -> Any:
-    from src.config.settings import settings
-    from src.db.models import create_engine_from_url, get_session_factory
-
-    engine = create_engine_from_url(settings.database_url)
-    SessionFactory = get_session_factory(engine)
-    with SessionFactory() as session:
+    with _SessionFactory() as session:
         yield session
 
 
@@ -160,10 +159,11 @@ def get_preferences(user_id: str, session: SessionDep) -> UserPreferences:
 
 @router.put("/{user_id}", response_model=UserPreferencesOut)
 def upsert_preferences(
-    user_id: str, body: UserPreferencesIn, session: SessionDep
+    user_id: str, body: UserPreferencesIn, session: SessionDep, background_tasks: BackgroundTasks
 ) -> UserPreferences:
     row = session.query(UserPreferences).filter_by(user_id=user_id).first()
-    pairs = [{"source": p.source, "dest": p.dest} for p in body.transfer_pairs]
+    valid_pairs = body.validated_transfer_pairs()
+    pairs = [{"source": p.source, "dest": p.dest} for p in valid_pairs]
 
     if row:
         row.monitored_programs = body.validated_programs()
@@ -190,7 +190,8 @@ def upsert_preferences(
             for p in (row.transfer_pairs or [])
             if "source" in p and "dest" in p
         ]
-        dispatch_confirmation(
+        background_tasks.add_task(
+            dispatch_confirmation,
             user_id=str(row.user_id),
             user_email=row.email,
             unsubscribe_token=(

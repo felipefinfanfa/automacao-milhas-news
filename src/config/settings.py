@@ -1,7 +1,21 @@
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-LOYALTY_PROGRAMS = ["smiles", "azul", "latam", "livelo", "esfera", "iupp"]
+LOYALTY_PROGRAMS = ["smiles", "azul", "latam", "livelo", "esfera"]
+
+# Origens permitidas em pares de transferência
+TRANSFER_SOURCES = ["esfera", "livelo"]
+
+# Destinos permitidos em pares de transferência
+TRANSFER_DESTS = ["smiles", "azul", "latam"]
+
+# Programas permitidos para acúmulo
+ACCUMULATION_PROGRAMS = ["esfera", "livelo", "smiles", "azul", "latam"]
+
+# Todos os pares ordenados válidos (não-comutativos)
+VALID_TRANSFER_PAIRS: frozenset[tuple[str, str]] = frozenset(
+    (src, dst) for src in TRANSFER_SOURCES for dst in TRANSFER_DESTS
+)
 
 CLOUDSCRAPER_DOMAINS = {
     "smiles.com.br",
@@ -9,7 +23,6 @@ CLOUDSCRAPER_DOMAINS = {
     "latampass.latam.com",
     "livelo.com.br",
     "esfera.com.vc",
-    "iupp.com.br",
 }
 
 PROGRAM_URLS: dict[str, str] = {
@@ -18,7 +31,6 @@ PROGRAM_URLS: dict[str, str] = {
     "latam": "https://www.latampass.latam.com/pt_br/acumule-pontos/transferencia-de-pontos",
     "livelo": "https://www.livelo.com.br/transferencia",
     "esfera": "https://www.esfera.com.vc/transferencia-de-pontos",
-    "iupp": "https://www.iupp.com.br/transferir",
 }
 
 NEWS_RSS_FEEDS: dict[str, str] = {
@@ -35,6 +47,10 @@ GOOGLE_NEWS_KEYWORDS = [
     "promoção livelo transferência",
     "bônus transferência latam pass",
     "promoção esfera milhas",
+    "bônus transferência esfera smiles",
+    "bônus transferência livelo smiles",
+    "bônus transferência esfera azul",
+    "bônus transferência livelo azul",
 ]
 
 

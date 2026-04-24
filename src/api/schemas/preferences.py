@@ -4,7 +4,7 @@ from typing import Any
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
-from src.config.settings import LOYALTY_PROGRAMS
+from src.config.settings import ACCUMULATION_PROGRAMS, LOYALTY_PROGRAMS, VALID_TRANSFER_PAIRS
 
 
 class TransferPairIn(BaseModel):
@@ -23,7 +23,13 @@ class UserPreferencesIn(BaseModel):
         return [p for p in self.monitored_programs if p in LOYALTY_PROGRAMS]
 
     def validated_accumulation(self) -> list[str]:
-        return [p for p in self.accumulation_programs if p in LOYALTY_PROGRAMS]
+        return [p for p in self.accumulation_programs if p in ACCUMULATION_PROGRAMS]
+
+    def validated_transfer_pairs(self) -> list[TransferPairIn]:
+        return [
+            p for p in self.transfer_pairs
+            if (p.source, p.dest) in VALID_TRANSFER_PAIRS
+        ]
 
 
 class UserPreferencesOut(BaseModel):
