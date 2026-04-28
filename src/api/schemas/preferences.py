@@ -26,10 +26,7 @@ class UserPreferencesIn(BaseModel):
         return [p for p in self.accumulation_programs if p in ACCUMULATION_PROGRAMS]
 
     def validated_transfer_pairs(self) -> list[TransferPairIn]:
-        return [
-            p for p in self.transfer_pairs
-            if (p.source, p.dest) in VALID_TRANSFER_PAIRS
-        ]
+        return [p for p in self.transfer_pairs if (p.source, p.dest) in VALID_TRANSFER_PAIRS]
 
 
 class UserPreferencesOut(BaseModel):
