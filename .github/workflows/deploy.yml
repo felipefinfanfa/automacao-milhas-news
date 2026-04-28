@@ -10,13 +10,16 @@ jobs:
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: GH_TOKEN
           script: |
             set -e
             cd /opt/miles-radar
-            git pull origin master
+            git pull https://x-access-token:$GH_TOKEN@github.com/felipefinfanfa/automacao-milhas-news.git master
             docker compose up -d --build
             docker compose ps
