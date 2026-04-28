@@ -6,8 +6,8 @@
   <title>Radar de Milhas — Alertas de Promoções</title>
   <meta name="description" content="Monitoramento em tempo real de promoções de transferência e acúmulo de milhas nos programas brasileiros.">
   <link rel="icon" type="image/png" href="/static/assets/images/logo-monogram.png">
-  <link rel="stylesheet" href="/static/css/tokens.css">
-  <link rel="stylesheet" href="/static/css/app.css">
+  <link rel="stylesheet" href="/static/css/tokens.css?v=3">
+  <link rel="stylesheet" href="/static/css/app.css?v=3">
 </head>
 <body>
 
@@ -56,6 +56,11 @@
       Configurar Alertas
       <svg class="hero-cta-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
     </a>
+
+    <div class="slots-badge" id="slots-badge" aria-live="polite">
+      <span class="slots-dot"></span>
+      <span id="slots-text">carregando vagas…</span>
+    </div>
 
     <div class="hero-stats">
       <div class="hero-stat">
@@ -120,22 +125,37 @@
       <button class="btn-link" onclick="resetEmail()">Alterar dados</button>
     </div>
 
-    <!-- Pares de Transferência -->
+    <!-- Transferências -->
     <div class="card reveal">
-      <div class="card-title">Pares de Transferência</div>
+      <div class="card-title">Transferência de Pontos</div>
       <p class="card-desc">
-        Par ordenado — Smiles&nbsp;→&nbsp;Azul é diferente de Azul&nbsp;→&nbsp;Smiles.
+        Escolha a origem e o destino. A direção importa — <strong>Esfera&nbsp;→&nbsp;Smiles</strong> é diferente de <strong>Smiles&nbsp;→&nbsp;Esfera</strong>.
       </p>
 
-      <div class="pair-builder">
-        <select id="pair-source" aria-label="Programa origem">
-          <option value="">De…</option>
-        </select>
-        <span class="pair-arrow">→</span>
-        <select id="pair-dest" aria-label="Programa destino">
-          <option value="">Para…</option>
-        </select>
-        <button class="btn btn-sm" onclick="addPair()">+ Add</button>
+      <div class="pair-wizard">
+        <div class="pair-wizard-block">
+          <div class="pair-wizard-label">Quais os seus programas de pontos?</div>
+          <div class="pair-chips" id="pair-src-chips"></div>
+        </div>
+
+        <div class="pair-wizard-divider" aria-hidden="true">
+          <span class="pair-div-line"></span>
+          <span class="pair-div-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 5v14M5 12l7 7 7-7"/>
+            </svg>
+          </span>
+          <span class="pair-div-line"></span>
+        </div>
+
+        <div class="pair-wizard-block">
+          <div class="pair-wizard-label">Para quais programas deseja transferir?</div>
+          <div class="pair-chips" id="pair-dst-chips"></div>
+        </div>
+      </div>
+
+      <div id="pair-add-row" style="display:none;margin-bottom:16px">
+        <button class="btn btn-sm" id="btn-add-pair" onclick="addPair()">Adicionar pares</button>
       </div>
 
       <div id="pairs-list" class="pairs-list">
@@ -175,6 +195,6 @@
 </footer>
 
 
-<script src="/static/js/app.js"></script>
+<script src="/static/js/app.js?v=3"></script>
 </body>
 </html>

@@ -1,15 +1,11 @@
 """Testes da sequência de 3 dias de e-mail."""
+
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
-from unittest.mock import MagicMock, call, patch
+from datetime import UTC, datetime, timedelta
+from unittest.mock import MagicMock
 
-import pytest
-
-from src.email.sequence import (
-    get_day1_sent_at,
-    has_sent,
-    record_sent,
+from src.pipeline.sequence import (
     schedule_followup_days,
     should_send_day,
 )
@@ -63,7 +59,7 @@ def test_day2_not_sent_if_promo_expired(past_date):
 
 
 def test_day2_not_sent_before_24h():
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     day1_sent = now - timedelta(hours=12)
     session = _make_session(day1_sent_at=day1_sent)
     future_end = now + timedelta(days=10)
@@ -71,7 +67,7 @@ def test_day2_not_sent_before_24h():
 
 
 def test_day2_sent_after_24h():
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     day1_sent = now - timedelta(hours=25)
     session = _make_session(day1_sent_at=day1_sent)
     future_end = now + timedelta(days=10)
@@ -85,7 +81,7 @@ def test_day3_not_sent_without_day1():
 
 def test_promo_extension_does_not_restart_sequence():
     """Prorrogação de promoção (end_date alterada) não reinicia a sequência."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     day1_sent = now - timedelta(hours=50)
     session = _make_session(day1_sent_at=day1_sent, already_sent_day=2)
 
@@ -98,7 +94,7 @@ def test_schedule_followup_days_skips_expired():
     """Quando a promo expira antes do Dia 2, nenhum job deve ser agendado."""
     scheduler = MagicMock()
     session = MagicMock()
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     day1_sent = now - timedelta(hours=1)
     # Promo expira em 10h — antes do Dia 2 (24h) e Dia 3 (48h)
     promo_expires_soon = now + timedelta(hours=10)
@@ -119,7 +115,7 @@ def test_schedule_followup_days_skips_expired():
 def test_schedule_followup_days_schedules_both(future_date):
     scheduler = MagicMock()
     session = MagicMock()
-    day1_sent = datetime.now(timezone.utc)
+    day1_sent = datetime.now(UTC)
 
     schedule_followup_days(
         scheduler=scheduler,

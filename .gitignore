@@ -1,13 +1,11 @@
 node_modules/
 dist/
 .env
+.env.local
 *.env.local
 snapshots/
 *.log
 .DS_Store
-
-# Docker — ambiente local (sem Traefik)
-docker-compose.local.yml
 
 # Python
 __pycache__/

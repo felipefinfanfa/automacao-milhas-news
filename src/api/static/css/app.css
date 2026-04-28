@@ -177,6 +177,45 @@
   height: 16px;
 }
 
+.slots-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  padding: 6px 14px;
+  background: rgba(45, 212, 240, 0.06);
+  border: 1px solid rgba(45, 212, 240, 0.18);
+  border-radius: 99px;
+  font-size: var(--text-xs);
+  color: var(--fg-3);
+  letter-spacing: var(--tracking-wide);
+}
+
+.slots-badge.full {
+  background: rgba(239, 68, 68, 0.06);
+  border-color: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.slots-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  flex-shrink: 0;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+.slots-badge.full .slots-dot {
+  background: #ef4444;
+  animation: none;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+
 .hero-stats {
   display: flex;
   gap: var(--space-12);
@@ -511,26 +550,54 @@
 
 
 /* ═══════════════════════════════════════════════
-   TRANSFER PAIRS
+   TRANSFER PAIR WIZARD
    ═══════════════════════════════════════════════ */
-.pair-builder {
+.pair-wizard {
   display: flex;
-  align-items: center;
-  gap: var(--space-2);
+  flex-direction: column;
+  gap: var(--space-4);
   margin-bottom: var(--space-5);
 }
 
-.pair-builder select {
-  flex: 1;
-  min-width: 0;
+.pair-wizard-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
-.pair-arrow {
-  color: var(--color-primary);
-  font-size: var(--text-base);
-  font-weight: var(--weight-bold);
-  flex-shrink: 0;
+.pair-wizard-label {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--fg-3);
 }
+
+.pair-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.pair-wizard-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.pair-div-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.pair-div-icon {
+  display: flex;
+  align-items: center;
+  color: var(--color-primary);
+  opacity: 0.45;
+}
+
 
 .pairs-list {
   display: flex;
@@ -695,7 +762,7 @@
     flex-wrap: wrap;
   }
 
-  .pair-builder select {
+  .pair-field {
     flex: 1 1 40%;
   }
 

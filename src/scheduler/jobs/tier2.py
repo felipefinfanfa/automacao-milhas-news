@@ -1,21 +1,20 @@
 """Tier 2 — Executa nos scans de 09h e 18h BRT.
 
-Monitores adicionais: sitemap_monitor, robots_monitor, news_scraper, search_console.
+Monitores adicionais: sitemap_monitor, robots_monitor, news_scraper.
 Combina com Tier 1 no mesmo pipeline.
 """
+
 from __future__ import annotations
 
 import logging
 from typing import Any
 
-from src.integrations.user_agents import rotate_ua
-from src.monitors.news_scraper import scan_all_news
-from src.monitors.robots_monitor import scan_robots
-from src.monitors.search_console import scan_search_console
-from src.monitors.sitemap_monitor import scan_sitemap
-from src.processor.dedup import dedup_batch
-from src.processor.extractor import extract
+from src.pipeline.dedup import dedup_batch
+from src.pipeline.extractor import extract
+from src.pipeline.monitors.robots_monitor import scan_robots
+from src.pipeline.monitors.sitemap_monitor import scan_sitemap
 from src.scheduler.jobs.tier1 import run_tier1
+from src.tools.user_agents import rotate_ua
 from src.types import PromotionData
 
 logger = logging.getLogger(__name__)
@@ -36,8 +35,6 @@ def run_tier2(
     signals = []
     signals.extend(scan_sitemap())
     signals.extend(scan_robots())
-    signals.extend(scan_all_news())
-    signals.extend(scan_search_console())
 
     logger.info("Tier 2 extra: %d sinais adicionais coletados", len(signals))
 

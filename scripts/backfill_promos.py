@@ -7,12 +7,13 @@ Uso:
     python scripts/backfill_promos.py --dry-run
     python scripts/backfill_promos.py --since 2026-01-01
 """
+
 from __future__ import annotations
 
 import argparse
 import logging
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
@@ -46,8 +47,7 @@ def main() -> None:
 
     from src.config.settings import settings
     from src.db.models import SourceSnapshot, create_engine_from_url, get_session_factory
-    from src.processor.dedup import save_promotion
-    from src.processor.extractor import extract
+    from src.pipeline.extractor import extract
     from src.types import RawSignal
 
     engine = create_engine_from_url(settings.database_url)
@@ -55,7 +55,7 @@ def main() -> None:
 
     since: datetime | None = None
     if args.since:
-        since = datetime.strptime(args.since, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        since = datetime.strptime(args.since, "%Y-%m-%d").replace(tzinfo=UTC)
 
     with SessionFactory() as session:
         query = session.query(SourceSnapshot)
@@ -83,7 +83,8 @@ def main() -> None:
             total_extracted += len(promos)
 
             for promo in promos:
-                from src.processor.dedup import find_existing
+                from src.pipeline.dedup import find_existing
+
                 existing = find_existing(session, promo.fingerprint)
                 if not existing:
                     total_would_create += 1

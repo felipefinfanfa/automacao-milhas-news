@@ -2,9 +2,10 @@
 
 Iniciar: uvicorn src.api.main:app --reload
 """
+
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import AsyncGenerator
 
 import sentry_sdk
 from fastapi import FastAPI
@@ -27,7 +28,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 
 app = FastAPI(
-    title="Miles Radar — Preferências",
+    title="Radar de Milhas — Preferências",
     version="1.0.0",
     lifespan=lifespan,
 )

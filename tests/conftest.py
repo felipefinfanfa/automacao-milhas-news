@@ -1,7 +1,8 @@
 """Fixtures compartilhadas entre todos os testes."""
+
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -38,9 +39,9 @@ def mock_session():
 
 @pytest.fixture()
 def future_date():
-    return datetime(2026, 5, 31, tzinfo=timezone.utc)
+    return datetime(2026, 5, 31, tzinfo=UTC)
 
 
 @pytest.fixture()
 def past_date():
-    return datetime(2025, 1, 1, tzinfo=timezone.utc)
+    return datetime(2025, 1, 1, tzinfo=UTC)

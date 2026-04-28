@@ -8,9 +8,9 @@ Cron de 6 horários/dia (06,09,12,15,18,21 BRT):
 - 18h: Tier 2
 - 21h: Tier 1
 """
+
 import argparse
 import logging
-import sys
 
 import sentry_sdk
 from apscheduler.schedulers.blocking import BlockingScheduler
@@ -82,6 +82,7 @@ def main(dry_run: bool = False) -> None:
         logger.info("[DRY RUN] Executando 1 ciclo completo Tier 3 sem e-mails")
         with _make_session() as session:
             from src.scheduler.jobs.tier3 import run_tier3
+
             run_tier3(session, dry_run=True)
         logger.info("[DRY RUN] Concluído")
         return
@@ -91,34 +92,53 @@ def main(dry_run: bool = False) -> None:
     tz = "America/Sao_Paulo"
 
     scheduler.add_job(
-        _run_tier3_job, CronTrigger(hour=6, minute=0, timezone=tz),
-        args=[scheduler], id="tier3_06h", name="Tier3 06h",
+        _run_tier3_job,
+        CronTrigger(hour=6, minute=0, timezone=tz),
+        args=[scheduler],
+        id="tier3_06h",
+        name="Tier3 06h",
     )
     scheduler.add_job(
-        _run_tier2_job, CronTrigger(hour=9, minute=0, timezone=tz),
-        args=[scheduler], id="tier2_09h", name="Tier2 09h",
+        _run_tier2_job,
+        CronTrigger(hour=9, minute=0, timezone=tz),
+        args=[scheduler],
+        id="tier2_09h",
+        name="Tier2 09h",
     )
     scheduler.add_job(
-        _run_tier1_job, CronTrigger(hour=12, minute=0, timezone=tz),
+        _run_tier1_job,
+        CronTrigger(hour=12, minute=0, timezone=tz),
         kwargs={"scheduler": scheduler, "force_send": True},
-        id="tier1_12h", name="Tier1 12h (rotina)",
+        id="tier1_12h",
+        name="Tier1 12h (rotina)",
     )
     scheduler.add_job(
-        _run_tier1_job, CronTrigger(hour=15, minute=0, timezone=tz),
-        args=[scheduler], id="tier1_15h", name="Tier1 15h",
+        _run_tier1_job,
+        CronTrigger(hour=15, minute=0, timezone=tz),
+        args=[scheduler],
+        id="tier1_15h",
+        name="Tier1 15h",
     )
     scheduler.add_job(
-        _run_tier2_job, CronTrigger(hour=18, minute=0, timezone=tz),
-        args=[scheduler], id="tier2_18h", name="Tier2 18h",
+        _run_tier2_job,
+        CronTrigger(hour=18, minute=0, timezone=tz),
+        args=[scheduler],
+        id="tier2_18h",
+        name="Tier2 18h",
     )
     scheduler.add_job(
-        _run_tier1_job, CronTrigger(hour=21, minute=0, timezone=tz),
-        args=[scheduler], id="tier1_21h", name="Tier1 21h",
+        _run_tier1_job,
+        CronTrigger(hour=21, minute=0, timezone=tz),
+        args=[scheduler],
+        id="tier1_21h",
+        name="Tier1 21h",
     )
 
     scheduler.add_job(
-        _check_db_alive, CronTrigger(day="*/5", hour=3, minute=0, timezone=tz),
-        id="db_keepalive", name="DB keepalive",
+        _check_db_alive,
+        CronTrigger(day="*/5", hour=3, minute=0, timezone=tz),
+        id="db_keepalive",
+        name="DB keepalive",
     )
 
     logger.info("Scheduler iniciado — 6 scans/dia (06,09,12,15,18,21 BRT)")

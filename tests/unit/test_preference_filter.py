@@ -1,11 +1,8 @@
 """Testes de filtragem de promoções por preferências do usuário."""
+
 from __future__ import annotations
 
-from datetime import datetime, timezone
-
-import pytest
-
-from src.processor.preference_filter import filter_for_user, matches_preferences
+from src.pipeline.preference_filter import filter_for_user, matches_preferences
 from src.types import PromotionData, TransferPair, UserPreferencesData
 
 

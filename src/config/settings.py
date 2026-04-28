@@ -20,16 +20,16 @@ VALID_TRANSFER_PAIRS: frozenset[tuple[str, str]] = frozenset(
 CLOUDSCRAPER_DOMAINS = {
     "smiles.com.br",
     "voeazul.com.br",
-    "latampass.latam.com",
+    "latam.com",
     "livelo.com.br",
     "esfera.com.vc",
 }
 
 PROGRAM_URLS: dict[str, str] = {
-    "smiles": "https://www.smiles.com.br/voe-de-smiles/transferencia-de-pontos",
-    "azul": "https://www.viajemais.voeazul.com.br/transferencia",
-    "latam": "https://www.latampass.latam.com/pt_br/acumule-pontos/transferencia-de-pontos",
-    "livelo": "https://www.livelo.com.br/transferencia",
+    "smiles": "https://www.smiles.com.br/acumule/transferencia-de-pontos",
+    "azul": "https://www.voeazul.com.br/pt/br/azul-fidelidade/como-acumular/transferencia-de-pontos",
+    "latam": "https://www.latam.com/pt_br/latam-pass/acumule-pontos/transferencia-de-pontos/",
+    "livelo": "https://www.livelo.com.br/ganhe-pontos/transferencia-de-pontos",
     "esfera": "https://www.esfera.com.vc/transferencia-de-pontos",
 }
 
@@ -64,9 +64,7 @@ class Settings(BaseSettings):
 
     # Email — Resend (primary)
     resend_api_key: str = Field(default="", alias="RESEND_API_KEY")
-    email_from: str = Field(
-        default="Miles Radar <noreply@milesradar.com>", alias="EMAIL_FROM"
-    )
+    email_from: str = Field(default="Radar de Milhas <noreply@milesradar.com>", alias="EMAIL_FROM")
 
     # Email — Gmail SMTP (fallback)
     gmail_user: str = Field(default="", alias="GMAIL_USER")
@@ -77,9 +75,7 @@ class Settings(BaseSettings):
 
     # Capacity & URLs
     max_users: int = Field(default=200, alias="MAX_USERS")
-    app_base_url: str = Field(
-        default="https://milhas.felipefinfanfa.com.br", alias="APP_BASE_URL"
-    )
+    app_base_url: str = Field(default="https://milhas.felipefinfanfa.com.br", alias="APP_BASE_URL")
 
     # Observability
     sentry_dsn: str = Field(default="", alias="SENTRY_DSN")

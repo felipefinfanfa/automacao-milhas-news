@@ -4,6 +4,7 @@ Uso único para testes — não registra nada no email_log.
 
     py -3 scripts/test_email.py
 """
+
 from __future__ import annotations
 
 import logging
@@ -19,9 +20,10 @@ logging.basicConfig(
 )
 
 # Força reenvio: has_sent() sempre retorna False e record_sent() não persiste nada
-import src.email.sequence as _seq  # noqa: E402
-_seq.has_sent = lambda *_: False          # type: ignore[assignment]
-_seq.record_sent = lambda *_: None        # type: ignore[assignment]
+import src.pipeline.sequence as _seq  # noqa: E402
+
+_seq.has_sent = lambda *_: False  # type: ignore[assignment]
+_seq.record_sent = lambda *_: None  # type: ignore[assignment]
 
 from src.config.settings import settings  # noqa: E402
 from src.db.models import create_engine_from_url, get_session_factory  # noqa: E402

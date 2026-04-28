@@ -1,6 +1,8 @@
 """Rotas FastAPI para gerenciamento de preferências do usuário."""
+
 from __future__ import annotations
 
+import html
 import uuid
 from textwrap import dedent
 from typing import Annotated, Any
@@ -40,7 +42,7 @@ def _unsubscribe_html(message: str) -> str:
         <head>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width,initial-scale=1">
-          <title>Miles Radar — Cancelar inscrição</title>
+          <title>Radar de Milhas — Cancelar inscrição</title>
           <style>
             body {{
               font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -59,8 +61,8 @@ def _unsubscribe_html(message: str) -> str:
         </head>
         <body>
           <div class="card">
-            <h1>Miles Radar</h1>
-            <p>{message}</p>
+            <h1>Radar de Milhas</h1>
+            <p>{html.escape(message)}</p>
             <p style="margin-top:1.25rem">
               <a href="/">Voltar ao site</a>
             </p>
@@ -68,6 +70,13 @@ def _unsubscribe_html(message: str) -> str:
         </body>
         </html>
     """)
+
+
+@router.get("/slots")
+def get_slots(session: SessionDep) -> dict[str, int]:
+    used = session.query(UserPreferences).count()
+    total = settings.max_users
+    return {"used": used, "total": total, "remaining": max(0, total - used)}
 
 
 @router.get("/programs/list")
@@ -153,7 +162,9 @@ def unsubscribe(token: str, session: SessionDep) -> Response:
 def get_preferences(user_id: str, session: SessionDep) -> UserPreferences:
     row = session.query(UserPreferences).filter_by(user_id=user_id).first()
     if not row:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Preferências não encontradas")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Preferências não encontradas"
+        )
     return row
 
 
@@ -183,7 +194,7 @@ def upsert_preferences(
 
     has_prefs = bool(row.transfer_pairs or row.accumulation_programs)
     if has_prefs and row.email:
-        from src.email.dispatcher import dispatch_confirmation
+        from src.pipeline.dispatcher import dispatch_confirmation
 
         pairs = [
             type("P", (), {"source": p["source"], "dest": p["dest"]})()
@@ -194,9 +205,7 @@ def upsert_preferences(
             dispatch_confirmation,
             user_id=str(row.user_id),
             user_email=row.email,
-            unsubscribe_token=(
-                str(row.unsubscribe_token) if row.unsubscribe_token else None
-            ),
+            unsubscribe_token=(str(row.unsubscribe_token) if row.unsubscribe_token else None),
             transfer_pairs=pairs,
             accumulation_programs=row.accumulation_programs or [],
         )

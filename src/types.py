@@ -1,31 +1,40 @@
 """Domain types compartilhados entre monitors, processor e email."""
+
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
-
 PromoType = Literal["transfer_bonus", "points_purchase", "other"]
-SourceType = Literal["direct_scraper", "hash_diff", "rss", "google_news", "sitemap",
-                     "robots", "news_scraper", "url_fuzzer", "visual_diff", "ct_logs",
-                     "dns_monitor", "search_console"]
+SourceType = Literal[
+    "direct_scraper",
+    "hash_diff",
+    "rss",
+    "google_news",
+    "sitemap",
+    "robots",
+    "news_scraper",
+    "visual_diff",
+]
 
 
 class RawSignal(BaseModel):
     """Saída bruta de qualquer monitor — entrada do extractor."""
+
     source_url: str
     source_program: str | None = None
     source_type: SourceType
     title: str | None = None
     raw_content: str | None = None
-    fetched_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    fetched_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     extra: dict[str, Any] = Field(default_factory=dict)
 
 
 class PromotionData(BaseModel):
     """Promoção estruturada produzida pelo extractor (antes de gravar no DB)."""
+
     fingerprint: str
     source_program: str
     source_type: SourceType

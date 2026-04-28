@@ -1,21 +1,21 @@
 /* Miles Radar — Application Logic */
 
 const TRANSFER_SOURCES = [
-  { id: 'esfera', name: 'Esfera',     color: '#0ea5e9', bg: 'rgba(14,165,233,0.12)' },
+  { id: 'esfera', name: 'Esfera',     color: '#dc2626', bg: 'rgba(220,38,38,0.12)'  },
   { id: 'livelo', name: 'Livelo',     color: '#7c3aed', bg: 'rgba(124,58,237,0.12)' },
 ];
 
 const TRANSFER_DESTS = [
   { id: 'smiles', name: 'Smiles',     color: '#f97316', bg: 'rgba(249,115,22,0.12)' },
-  { id: 'latam',  name: 'LATAM Pass', color: '#dc2626', bg: 'rgba(220,38,38,0.12)'  },
+  { id: 'latam',  name: 'LATAM Pass', color: '#0ea5e9', bg: 'rgba(14,165,233,0.12)' },
   { id: 'azul',   name: 'TudoAzul',  color: '#2563eb', bg: 'rgba(37,99,235,0.12)'  },
 ];
 
 const ACCUM_PROGRAMS = [
-  { id: 'esfera', name: 'Esfera',     color: '#0ea5e9', bg: 'rgba(14,165,233,0.12)' },
+  { id: 'esfera', name: 'Esfera',     color: '#dc2626', bg: 'rgba(220,38,38,0.12)'  },
   { id: 'livelo', name: 'Livelo',     color: '#7c3aed', bg: 'rgba(124,58,237,0.12)' },
   { id: 'smiles', name: 'Smiles',     color: '#f97316', bg: 'rgba(249,115,22,0.12)' },
-  { id: 'latam',  name: 'LATAM Pass', color: '#dc2626', bg: 'rgba(220,38,38,0.12)'  },
+  { id: 'latam',  name: 'LATAM Pass', color: '#0ea5e9', bg: 'rgba(14,165,233,0.12)' },
   { id: 'azul',   name: 'TudoAzul',  color: '#2563eb', bg: 'rgba(37,99,235,0.12)'  },
 ];
 
@@ -26,8 +26,29 @@ const ALL_PROGRAMS = [...new Map(
 
 let userId    = localStorage.getItem('milesRadarUserId');
 let userEmail = localStorage.getItem('milesRadarEmail');
-let selectedAccum  = new Set();
-let transferPairs  = [];
+let selectedAccum   = new Set();
+let transferPairs   = [];
+let selectedSources = new Set();
+let selectedDests   = new Set();
+
+/* ── Slots badge ── */
+async function loadSlots() {
+  const badge = document.getElementById('slots-badge');
+  const text  = document.getElementById('slots-text');
+  if (!badge || !text) return;
+  try {
+    const res  = await fetch('/preferences/slots');
+    const data = await res.json();
+    if (data.remaining <= 0) {
+      text.textContent = 'Vagas esgotadas';
+      badge.classList.add('full');
+    } else {
+      text.textContent = `${data.remaining} vaga${data.remaining === 1 ? '' : 's'} restante${data.remaining === 1 ? '' : 's'}`;
+    }
+  } catch {
+    badge.style.display = 'none';
+  }
+}
 
 /* ── Navbar scroll behavior ── */
 function initNavbar() {
@@ -69,17 +90,64 @@ function buildAccumGrid() {
   });
 }
 
-/* ── Build pair selects ── */
-function buildPairSelects() {
-  const src = document.getElementById('pair-source');
-  const dst = document.getElementById('pair-dest');
-  if (!src || !dst) return;
+/* ── Build pair wizard chips ── */
+function buildPairChips() {
+  const srcGrid = document.getElementById('pair-src-chips');
+  const dstGrid = document.getElementById('pair-dst-chips');
+  if (!srcGrid || !dstGrid) return;
+
   TRANSFER_SOURCES.forEach(p => {
-    src.insertAdjacentHTML('beforeend', `<option value="${p.id}">${p.name}</option>`);
+    const chip = document.createElement('div');
+    chip.className = 'prog-chip pair-chip';
+    chip.dataset.id = p.id;
+    chip.style.setProperty('--prog-color', p.color);
+    chip.style.setProperty('--prog-bg', p.bg);
+    chip.innerHTML = `<span class="prog-dot"></span><span class="prog-name">${p.name}</span>`;
+    chip.addEventListener('click', () => togglePairSource(p.id, chip));
+    srcGrid.appendChild(chip);
   });
+
   TRANSFER_DESTS.forEach(p => {
-    dst.insertAdjacentHTML('beforeend', `<option value="${p.id}">${p.name}</option>`);
+    const chip = document.createElement('div');
+    chip.className = 'prog-chip pair-chip';
+    chip.dataset.id = p.id;
+    chip.style.setProperty('--prog-color', p.color);
+    chip.style.setProperty('--prog-bg', p.bg);
+    chip.innerHTML = `<span class="prog-dot"></span><span class="prog-name">${p.name}</span>`;
+    chip.addEventListener('click', () => togglePairDest(p.id, chip));
+    dstGrid.appendChild(chip);
   });
+}
+
+/* ── Toggle source chip (multi-select) ── */
+function togglePairSource(id, chip) {
+  if (selectedSources.has(id)) {
+    selectedSources.delete(id);
+    chip.classList.remove('selected');
+  } else {
+    selectedSources.add(id);
+    chip.classList.add('selected');
+  }
+  updateAddPairButton();
+}
+
+/* ── Toggle destination chip (multi-select) ── */
+function togglePairDest(id, chip) {
+  if (selectedDests.has(id)) {
+    selectedDests.delete(id);
+    chip.classList.remove('selected');
+  } else {
+    selectedDests.add(id);
+    chip.classList.add('selected');
+  }
+  updateAddPairButton();
+}
+
+/* ── Show/hide add button ── */
+function updateAddPairButton() {
+  const row = document.getElementById('pair-add-row');
+  if (!row) return;
+  row.style.display = (selectedSources.size > 0 && selectedDests.size > 0) ? 'block' : 'none';
 }
 
 /* ── Toggle accumulation chip ── */
@@ -93,14 +161,25 @@ function toggleAccum(id, chip) {
   }
 }
 
-/* ── Add transfer pair ── */
+/* ── Add all combinations from selected sources × dests ── */
 function addPair() {
-  const src = document.getElementById('pair-source').value;
-  const dst = document.getElementById('pair-dest').value;
-  if (!src || !dst || src === dst) return;
-  if (transferPairs.some(p => p.source === src && p.dest === dst)) return;
-  transferPairs.push({ source: src, dest: dst });
+  if (selectedSources.size === 0 || selectedDests.size === 0) return;
+
+  selectedSources.forEach(src => {
+    selectedDests.forEach(dst => {
+      if (src !== dst && !transferPairs.some(p => p.source === src && p.dest === dst)) {
+        transferPairs.push({ source: src, dest: dst });
+      }
+    });
+  });
+
   renderPairs();
+
+  // Reset wizard
+  selectedSources.clear();
+  selectedDests.clear();
+  document.querySelectorAll('.pair-chip').forEach(c => c.classList.remove('selected'));
+  document.getElementById('pair-add-row').style.display = 'none';
 }
 
 /* ── Remove transfer pair ── */
@@ -304,9 +383,13 @@ function resetEmail() {
   document.getElementById('email-error').textContent = '';
 
   transferPairs = [];
-  selectedAccum = new Set();
+  selectedAccum  = new Set();
+  selectedSources.clear();
+  selectedDests.clear();
   renderPairs();
   document.querySelectorAll('.prog-chip').forEach(c => c.classList.remove('selected'));
+  const addRow = document.getElementById('pair-add-row');
+  if (addRow) addRow.style.display = 'none';
   document.getElementById('save-success').classList.remove('show');
   document.getElementById('save-error').classList.remove('show');
 }
@@ -320,8 +403,9 @@ function scrollToForm() {
 function init() {
   initNavbar();
   initReveal();
+  loadSlots();
   buildAccumGrid();
-  buildPairSelects();
+  buildPairChips();
 
   const params   = new URLSearchParams(window.location.search);
   const uidParam = params.get('user_id');

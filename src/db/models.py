@@ -44,9 +44,7 @@ class Promotion(Base):
     cpf_limit: Any = Column(Text)
     confidence: Any = Column(Numeric(3, 2), nullable=False, default=0.80)
     raw_data: Any = Column(JSONB)
-    created_at: Any = Column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
+    created_at: Any = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     updated_at: Any = Column(
         DateTime(timezone=True),
         nullable=False,
@@ -64,9 +62,7 @@ class SourceSnapshot(Base):
     url: Any = Column(Text, nullable=False, unique=True)
     content_hash: Any = Column(Text, nullable=False)
     raw_content: Any = Column(Text)
-    fetched_at: Any = Column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
+    fetched_at: Any = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
 
 class UserPreferences(Base):
@@ -86,9 +82,7 @@ class UserPreferences(Base):
     monitored_programs: Any = Column(JSONB, nullable=False, default=list)
     transfer_pairs: Any = Column(JSONB, nullable=False, default=list)
     accumulation_programs: Any = Column(JSONB, nullable=False, default=list)
-    created_at: Any = Column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
+    created_at: Any = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     updated_at: Any = Column(
         DateTime(timezone=True),
         nullable=False,
@@ -116,13 +110,9 @@ class EmailLog(Base):
         nullable=False,
     )
     day_number: Any = Column(Integer, nullable=False)
-    sent_at: Any = Column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
+    sent_at: Any = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
-    __table_args__ = (
-        UniqueConstraint("user_id", "promo_id", "day_number", name="uq_email_log"),
-    )
+    __table_args__ = (UniqueConstraint("user_id", "promo_id", "day_number", name="uq_email_log"),)
 
     promotion: Any = relationship("Promotion", back_populates="email_logs")
     user_prefs: Any = relationship("UserPreferences", back_populates="email_logs")
@@ -152,5 +142,9 @@ def get_session_factory(engine: Any) -> Any:
 
 def create_engine_from_url(database_url: str) -> Any:
     from sqlalchemy import create_engine
+    from sqlalchemy.pool import NullPool
 
-    return create_engine(database_url, pool_pre_ping=True, pool_size=3, max_overflow=5)
+    # NullPool: never cache connections between queries.
+    # Required on Supabase free tier (session-mode pooler, hard limit of 15 connections).
+    # hash_diff and other monitors each open their own engine; pooling would exhaust the limit.
+    return create_engine(database_url, poolclass=NullPool, pool_pre_ping=True)

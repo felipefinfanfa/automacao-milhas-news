@@ -4,22 +4,24 @@ Monitores: direct_scraper, hash_diff, rss_monitor, google_news.
 Pipeline: RawSignal → extractor → dedup → preference_filter → dispatcher.
 O scan das 12h sempre envia e-mail de rotina; demais enviam apenas se nova promo.
 """
+
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from src.config.settings import ACCUMULATION_PROGRAMS, VALID_TRANSFER_PAIRS
-from src.integrations.user_agents import rotate_ua
-from src.monitors.direct_scraper import scan_all_programs
-from src.monitors.google_news import scan_google_news
-from src.monitors.hash_diff import scan_hash_diff
-from src.monitors.rss_monitor import scan_rss
-from src.processor.dedup import dedup_batch
-from src.processor.extractor import extract
-from src.processor.preference_filter import filter_for_all_users, load_all_preferences
-from src.types import PromotionData
+from src.pipeline.dedup import dedup_batch
+from src.pipeline.extractor import extract
+from src.pipeline.monitors.direct_scraper import scan_all_programs
+from src.pipeline.monitors.google_news import scan_google_news
+from src.pipeline.monitors.hash_diff import scan_hash_diff
+from src.pipeline.monitors.news_scraper import scan_all_news
+from src.pipeline.monitors.rss_monitor import scan_rss
+from src.pipeline.preference_filter import load_all_preferences
+from src.tools.user_agents import rotate_ua
+from src.types import PromotionData, UserPreferencesData
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +34,18 @@ def _is_relevant_promo(promo: PromotionData) -> bool:
         return (origin, dest) in VALID_TRANSFER_PAIRS
     program = (promo.origin_program or promo.source_program or "").lower()
     return program in ACCUMULATION_PROGRAMS
+
+
+def _db_promo_matches_prefs(promo: Any, prefs: UserPreferencesData) -> bool:
+    """Verifica se um registro Promotion do banco bate com as preferências do usuário."""
+    if promo.promo_type == "transfer_bonus":
+        if not prefs.transfer_pairs:
+            return False
+        origin = (promo.origin_program or promo.source_program or "").lower()
+        dest = (promo.destination_program or "").lower()
+        return any(p.source.lower() == origin and p.dest.lower() == dest for p in prefs.transfer_pairs)
+    program = (promo.origin_program or promo.source_program or "").lower()
+    return program in {p.lower() for p in prefs.accumulation_programs}
 
 
 def run_tier1(
@@ -54,9 +68,11 @@ def run_tier1(
     rotate_ua()
     logger.info("=== Tier 1 scan iniciado ===")
 
+    # News blogs first (primary source), then direct program scraping
     signals = []
     signals.extend(scan_rss())
     signals.extend(scan_google_news())
+    signals.extend(scan_all_news())
     signals.extend(scan_hash_diff())
     signals.extend(scan_all_programs())
 
@@ -91,84 +107,90 @@ def run_tier1(
     return new_promos_data
 
 
-def _dispatch_emails(session: Any, new_promos_data: list[PromotionData], scheduler: Any | None) -> None:
+def _dispatch_emails(
+    session: Any, new_promos_data: list[PromotionData], scheduler: Any | None
+) -> None:
     from src.config.settings import settings as _settings
-    from src.db.models import Promotion
-    from src.email.dispatcher import dispatch_day1, dispatch_upcoming
+    from src.db.models import EmailLog, Promotion
+    from src.pipeline.dispatcher import dispatch_day1, dispatch_upcoming
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     all_prefs = load_all_preferences(session)
 
     if not all_prefs:
         logger.warning("Nenhuma preferência de usuário cadastrada, sem e-mails")
         return
 
-    new_fingerprints = {p.fingerprint for p in new_promos_data}
-    new_db_promos = (
-        session.query(Promotion)
-        .filter(Promotion.fingerprint.in_(new_fingerprints))
-        .all()
-    )
-
-    # Nunca enviar e-mail de promoção expirada
-    before = len(new_db_promos)
-    new_db_promos = [p for p in new_db_promos if p.ends_at is None or p.ends_at > now]
-    if before != len(new_db_promos):
-        logger.info("Tier 1: %d promoção(ões) descartada(s) por expiração", before - len(new_db_promos))
-
-    # Mantém apenas transferências bonificadas com % definido
-    new_db_promos = [
-        p for p in new_db_promos
-        if p.promo_type == "transfer_bonus" and p.bonus_percent is not None
-    ]
-
-    # Separa ativas (starts_at <= now ou sem data de início) das futuras
-    active_db = [p for p in new_db_promos if p.starts_at is None or p.starts_at <= now]
-    future_db = [p for p in new_db_promos if p.starts_at is not None and p.starts_at > now]
-
-    # Top 20 transferências bonificadas ativas do banco para o digest consolidado
-    active_promos = (
+    # All active promos in DB (ends_at required, started or no start date)
+    all_active_db: list[Any] = (
         session.query(Promotion)
         .filter(
-            (Promotion.ends_at == None) | (Promotion.ends_at > now),  # noqa: E711
-            (Promotion.starts_at == None) | (Promotion.starts_at <= now),  # noqa: E711
+            Promotion.ends_at.isnot(None),
+            Promotion.ends_at > now,
             Promotion.promo_type == "transfer_bonus",
             Promotion.bonus_percent.isnot(None),
+            (Promotion.starts_at == None) | (Promotion.starts_at <= now),  # noqa: E711
         )
         .order_by(Promotion.bonus_percent.desc().nullslast())
-        .limit(20)
         .all()
     )
 
-    for_users = filter_for_all_users(new_promos_data, all_prefs)
+    # Future promos: only newly discovered this scan
+    new_fingerprints = {p.fingerprint for p in new_promos_data}
+    new_db_promos: list[Any] = (
+        session.query(Promotion).filter(Promotion.fingerprint.in_(new_fingerprints)).all()
+        if new_fingerprints
+        else []
+    )
+    future_db = [
+        p for p in new_db_promos
+        if p.starts_at is not None
+        and p.starts_at > now
+        and p.ends_at is not None
+        and p.ends_at > now
+        and p.promo_type == "transfer_bonus"
+        and p.bonus_percent is not None
+    ]
 
     for prefs in all_prefs:
-        user_new = for_users.get(prefs.user_id, [])
-        if not user_new:
-            continue
-
-        user_fingerprints = {p.fingerprint for p in user_new}
-        user_active_db = [p for p in active_db if p.fingerprint in user_fingerprints]
-        user_future_db = [p for p in future_db if p.fingerprint in user_fingerprints]
         user_email = prefs.email or _settings.digest_recipient
 
-        if user_active_db:
+        # Promos already sent to this user (day 1 is the only active-promo send)
+        sent_ids = {
+            str(row.promo_id)
+            for row in session.query(EmailLog.promo_id)
+            .filter(EmailLog.user_id == prefs.user_id, EmailLog.day_number == 1)
+            .all()
+        }
+
+        # Active promos matching this user's preferences not yet received
+        user_active = [
+            p for p in all_active_db
+            if str(p.id) not in sent_ids and _db_promo_matches_prefs(p, prefs)
+        ]
+
+        if user_active:
             dispatch_day1(
                 session=session,
                 user_id=prefs.user_id,
                 user_email=user_email,
-                new_promos=user_active_db,
-                all_active_promos=active_promos,
+                new_promos=user_active,
                 scheduler=scheduler,
                 unsubscribe_token=prefs.unsubscribe_token,
             )
 
-        if user_future_db:
+        # Future promos: only newly discovered ones for this user
+        user_future = [
+            p for p in future_db
+            if str(p.id) not in sent_ids and _db_promo_matches_prefs(p, prefs)
+        ]
+
+        if user_future:
             dispatch_upcoming(
                 session=session,
                 user_id=prefs.user_id,
                 user_email=user_email,
-                future_promos=user_future_db,
+                future_promos=user_future,
                 scheduler=scheduler,
                 unsubscribe_token=prefs.unsubscribe_token,
             )

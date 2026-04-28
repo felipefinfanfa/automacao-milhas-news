@@ -1,13 +1,12 @@
 """Testes de deduplicação por fingerprint."""
+
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import MagicMock, patch
 
-import pytest
-
-from src.processor.dedup import dedup_batch, find_existing, save_promotion
-from src.processor.extractor import _fingerprint
+from src.pipeline.dedup import dedup_batch, save_promotion
+from src.pipeline.extractor import _fingerprint
 from src.types import PromotionData
 
 
@@ -21,8 +20,8 @@ def _make_promo(**kwargs) -> PromotionData:
         origin_program="livelo",
         destination_program="smiles",
         bonus_percent=100.0,
-        starts_at=datetime(2026, 5, 1, tzinfo=timezone.utc),
-        ends_at=datetime(2026, 5, 31, tzinfo=timezone.utc),
+        starts_at=datetime(2026, 5, 1, tzinfo=UTC),
+        ends_at=datetime(2026, 5, 31, tzinfo=UTC),
         confidence=0.8,
     )
     defaults.update(kwargs)
@@ -50,8 +49,8 @@ def test_save_promotion_new(mock_session):
     promo = _make_promo()
     mock_session.query.return_value.filter_by.return_value.first.return_value = None
 
-    with patch("src.processor.dedup.find_existing", return_value=None):
-        with patch("src.processor.dedup.Promotion") as MockPromotion:
+    with patch("src.pipeline.dedup.find_existing", return_value=None):
+        with patch("src.pipeline.dedup.Promotion") as MockPromotion:
             mock_db = MagicMock()
             MockPromotion.return_value = mock_db
             result, is_new = save_promotion(mock_session, promo)
@@ -63,7 +62,7 @@ def test_save_promotion_existing(mock_session):
     promo = _make_promo()
     existing_mock = MagicMock()
 
-    with patch("src.processor.dedup.find_existing", return_value=existing_mock):
+    with patch("src.pipeline.dedup.find_existing", return_value=existing_mock):
         result, is_new = save_promotion(mock_session, promo)
         assert is_new is False
         assert result is existing_mock
@@ -80,8 +79,8 @@ def test_two_monitors_same_promo_yields_one_db_entry(mock_session):
     mock_db.fingerprint = fp
 
     # Primeira chamada: promo ainda não existe → salva. Segunda: já existe → dedup.
-    with patch("src.processor.dedup.find_existing", side_effect=[None, mock_db]):
-        with patch("src.processor.dedup.Promotion", return_value=mock_db):
+    with patch("src.pipeline.dedup.find_existing", side_effect=[None, mock_db]):
+        with patch("src.pipeline.dedup.Promotion", return_value=mock_db):
             results = dedup_batch(mock_session, [promo1, promo2])
 
     assert len(results) == 2

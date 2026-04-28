@@ -4,6 +4,7 @@ Revision ID: 007
 Revises: 006
 Create Date: 2026-04-23
 """
+
 from collections.abc import Sequence
 
 import sqlalchemy as sa
@@ -17,13 +18,16 @@ depends_on: str | Sequence[str] | None = None
 
 
 def _col_exists(conn: sa.engine.Connection, column: str) -> bool:
-    return conn.execute(
-        sa.text(
-            "SELECT 1 FROM information_schema.columns "
-            "WHERE table_name='user_preferences' AND column_name=:col"
-        ),
-        {"col": column},
-    ).fetchone() is not None
+    return (
+        conn.execute(
+            sa.text(
+                "SELECT 1 FROM information_schema.columns "
+                "WHERE table_name='user_preferences' AND column_name=:col"
+            ),
+            {"col": column},
+        ).fetchone()
+        is not None
+    )
 
 
 def upgrade() -> None:

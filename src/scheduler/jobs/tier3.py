@@ -1,21 +1,19 @@
 """Tier 3 — Executa apenas no scan das 06h BRT.
 
-Monitores adicionais: url_fuzzer, visual_diff, ct_logs, dns_monitor.
+Monitores adicionais: visual_diff.
 Combina com Tier 2 no mesmo pipeline.
 """
+
 from __future__ import annotations
 
 import logging
 from typing import Any
 
-from src.integrations.user_agents import rotate_ua
-from src.monitors.ct_logs import scan_ct_logs
-from src.monitors.dns_monitor import scan_dns_monitor
-from src.monitors.url_fuzzer import scan_url_fuzzer
-from src.monitors.visual_diff import scan_visual_diff
-from src.processor.dedup import dedup_batch
-from src.processor.extractor import extract
+from src.pipeline.dedup import dedup_batch
+from src.pipeline.extractor import extract
+from src.pipeline.monitors.visual_diff import scan_visual_diff
 from src.scheduler.jobs.tier2 import run_tier2
+from src.tools.user_agents import rotate_ua
 from src.types import PromotionData
 
 logger = logging.getLogger(__name__)
@@ -34,10 +32,7 @@ def run_tier3(
     tier2_new = run_tier2(session, scheduler, dry_run, force_send)
 
     signals = []
-    signals.extend(scan_url_fuzzer())
     signals.extend(scan_visual_diff())
-    signals.extend(scan_ct_logs())
-    signals.extend(scan_dns_monitor())
 
     logger.info("Tier 3 extra: %d sinais adicionais coletados", len(signals))
 

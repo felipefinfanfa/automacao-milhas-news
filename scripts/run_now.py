@@ -7,12 +7,13 @@ Uso:
     python scripts/run_now.py
     python scripts/run_now.py --tier 1   # somente Tier 1 (mais rápido)
 """
+
 from __future__ import annotations
 
 import argparse
 import logging
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 # Garante que src/ está no path
@@ -29,10 +30,10 @@ logger = logging.getLogger("run_now")
 def main(tier: int = 1) -> None:
     from src.config.settings import settings
     from src.db.models import Promotion, create_engine_from_url, get_session_factory
-    from src.email.dispatcher import _render_template, send_email
-    from src.integrations.user_agents import rotate_ua
-    from src.processor.dedup import dedup_batch
-    from src.processor.extractor import extract
+    from src.pipeline.dedup import dedup_batch
+    from src.pipeline.dispatcher import _render_template, send_email
+    from src.pipeline.extractor import extract
+    from src.tools.user_agents import rotate_ua
 
     logger.info("=== Miles Radar — run_now (Tier %d) ===", tier)
     logger.info("Destinatário: %s", settings.digest_recipient)
@@ -41,10 +42,10 @@ def main(tier: int = 1) -> None:
     signals = []
 
     # Tier 1 — sempre
-    from src.monitors.rss_monitor import scan_rss
-    from src.monitors.google_news import scan_google_news
-    from src.monitors.hash_diff import scan_hash_diff
-    from src.monitors.direct_scraper import scan_all_programs
+    from src.pipeline.monitors.direct_scraper import scan_all_programs
+    from src.pipeline.monitors.google_news import scan_google_news
+    from src.pipeline.monitors.hash_diff import scan_hash_diff
+    from src.pipeline.monitors.rss_monitor import scan_rss
 
     logger.info("Coletando sinais Tier 1...")
     signals.extend(scan_rss())
@@ -53,9 +54,10 @@ def main(tier: int = 1) -> None:
     signals.extend(scan_all_programs())
 
     if tier >= 2:
-        from src.monitors.sitemap_monitor import scan_sitemap
-        from src.monitors.robots_monitor import scan_robots
-        from src.monitors.news_scraper import scan_all_news
+        from src.pipeline.monitors.news_scraper import scan_all_news
+        from src.pipeline.monitors.robots_monitor import scan_robots
+        from src.pipeline.monitors.sitemap_monitor import scan_sitemap
+
         logger.info("Coletando sinais Tier 2...")
         signals.extend(scan_sitemap())
         signals.extend(scan_robots())
@@ -81,7 +83,7 @@ def main(tier: int = 1) -> None:
         new_promos = [data for data, is_new in results if is_new]
         logger.info("Promoções novas (após dedup): %d", len(new_promos))
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         active_db = (
             session.query(Promotion)
             .filter(
@@ -99,23 +101,24 @@ def main(tier: int = 1) -> None:
             logger.info("Sem promoções para enviar.")
             return
 
-        best = next(
-            (p for p in active_db if p.bonus_percent is not None),
-            None,
+        promos_to_show = sorted(
+            new_db or active_db[:5],
+            key=lambda p: p.bonus_percent or 0,
+            reverse=True,
         )
+        best = promos_to_show[0] if promos_to_show and promos_to_show[0].bonus_percent else None
 
         html = _render_template(
             "day1.html",
             {
                 "email_title": "Promoções de Milhas — Scan Manual",
                 "header_title": 'Digest de <span style="color:#38bdf8">Promoções</span>',
-                "new_promotions": new_db or active_db[:5],
+                "new_promotions": promos_to_show,
                 "best_promotion": best,
-                "top_promotions": active_db,
             },
         )
 
-        n = len(new_db) if new_db else len(active_db[:5])
+        n = len(promos_to_show)
         suffix = "ões" if n > 1 else "ão"
         subject = f"Miles Radar — {n} promo{suffix} de milhas"
 
@@ -131,6 +134,8 @@ def main(tier: int = 1) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Executa scan e envia e-mail imediatamente")
-    parser.add_argument("--tier", type=int, default=1, choices=[1, 2], help="Tier de monitores (default: 1)")
+    parser.add_argument(
+        "--tier", type=int, default=1, choices=[1, 2], help="Tier de monitores (default: 1)"
+    )
     args = parser.parse_args()
     main(tier=args.tier)

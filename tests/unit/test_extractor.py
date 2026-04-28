@@ -1,13 +1,15 @@
 """Testes do extractor por programa com fixture HTML/RSS real."""
+
 from __future__ import annotations
 
-from datetime import timezone
+from datetime import UTC, datetime
 
 import pytest
 
-from src.processor.extractor import (
+from src.pipeline.extractor import (
     _extract_bonus_pct,
     _extract_date_range,
+    _extract_natural_end_date,
     _find_programs,
     extract,
 )
@@ -116,6 +118,122 @@ def test_extract_no_content():
         raw_content=None,
     )
     assert extract(signal) == []
+
+
+# --- Natural language date extraction ---
+
+def test_natural_end_date_hoje(monkeypatch):
+    fixed = datetime(2026, 4, 27, 12, 0, 0, tzinfo=UTC)
+    monkeypatch.setattr("src.pipeline.extractor.datetime", _FakeDatetime(fixed))
+    result = _extract_natural_end_date("hoje é o último dia da promoção")
+    assert result is not None
+    assert result.day == 27 and result.month == 4 and result.year == 2026
+
+
+def test_natural_end_date_termina_hoje(monkeypatch):
+    fixed = datetime(2026, 4, 27, 12, 0, 0, tzinfo=UTC)
+    monkeypatch.setattr("src.pipeline.extractor.datetime", _FakeDatetime(fixed))
+    result = _extract_natural_end_date("transferência com bônus, termina hoje")
+    assert result is not None
+    assert result.day == 27
+
+
+def test_natural_end_date_amanha(monkeypatch):
+    fixed = datetime(2026, 4, 27, 12, 0, 0, tzinfo=UTC)
+    monkeypatch.setattr("src.pipeline.extractor.datetime", _FakeDatetime(fixed))
+    result = _extract_natural_end_date("válido até amanhã, não perca")
+    assert result is not None
+    assert result.day == 28 and result.month == 4
+
+
+def test_natural_end_date_fim_do_mes(monkeypatch):
+    fixed = datetime(2026, 4, 10, 12, 0, 0, tzinfo=UTC)
+    monkeypatch.setattr("src.pipeline.extractor.datetime", _FakeDatetime(fixed))
+    result = _extract_natural_end_date("promoção válida até o fim do mês")
+    assert result is not None
+    assert result.day == 30 and result.month == 4
+
+
+def test_natural_end_date_written_date_with_year(monkeypatch):
+    fixed = datetime(2026, 4, 27, 12, 0, 0, tzinfo=UTC)
+    monkeypatch.setattr("src.pipeline.extractor.datetime", _FakeDatetime(fixed))
+    result = _extract_natural_end_date("válido até 30 de abril de 2026")
+    assert result is not None
+    assert result.day == 30 and result.month == 4 and result.year == 2026
+
+
+def test_natural_end_date_written_date_no_year(monkeypatch):
+    fixed = datetime(2026, 3, 1, 12, 0, 0, tzinfo=UTC)
+    monkeypatch.setattr("src.pipeline.extractor.datetime", _FakeDatetime(fixed))
+    result = _extract_natural_end_date("promoção até 30 de abril")
+    assert result is not None
+    assert result.day == 30 and result.month == 4 and result.year == 2026
+
+
+def test_natural_end_date_written_date_past_advances_year(monkeypatch):
+    fixed = datetime(2026, 5, 1, 12, 0, 0, tzinfo=UTC)
+    monkeypatch.setattr("src.pipeline.extractor.datetime", _FakeDatetime(fixed))
+    result = _extract_natural_end_date("promoção até 30 de abril")
+    assert result is not None
+    assert result.year == 2027
+
+
+def test_natural_end_date_none():
+    result = _extract_natural_end_date("promoção sem qualquer indicação de data")
+    assert result is None
+
+
+def test_extract_discards_promo_without_end_date():
+    signal = RawSignal(
+        source_url="https://example.com/promo",
+        source_type="rss",
+        title="100% de bônus Livelo para Smiles",
+        raw_content="Transferência bonificada imperdível, sem data definida.",
+    )
+    assert extract(signal) == []
+
+
+def test_extract_accepts_natural_language_end_date(monkeypatch):
+    fixed = datetime(2026, 4, 27, 12, 0, 0, tzinfo=UTC)
+    monkeypatch.setattr("src.pipeline.extractor.datetime", _FakeDatetime(fixed))
+    signal = RawSignal(
+        source_url="https://example.com/promo",
+        source_type="rss",
+        title="100% de bônus Livelo para Smiles",
+        raw_content="Hoje é o último dia desta transferência bonificada.",
+        fetched_at=fixed,  # artigo publicado em 27/04 — "hoje" é 27/04
+    )
+    promos = extract(signal)
+    assert len(promos) == 1
+    assert promos[0].ends_at is not None
+    assert promos[0].ends_at.day == 27
+
+
+def test_extract_discards_expired_from_old_article():
+    """Artigo antigo dizendo 'hoje é o último dia' deve ser descartado."""
+    article_date = datetime(2026, 3, 15, 12, 0, 0, tzinfo=UTC)
+    signal = RawSignal(
+        source_url="https://example.com/promo",
+        source_type="rss",
+        title="100% de bônus Livelo para Smiles",
+        raw_content="Hoje é o último dia desta transferência bonificada.",
+        fetched_at=article_date,  # publicado em março → ends_at = 15/03 → expirado
+    )
+    promos = extract(signal)
+    assert promos == []
+
+
+class _FakeDatetime:
+    """Substitui datetime.now(UTC) nos testes sem quebrar o restante da API."""
+
+    def __init__(self, fixed: datetime):
+        self._fixed = fixed
+
+    def now(self, tz=None) -> datetime:
+        return self._fixed
+
+    def __call__(self, *args, **kwargs) -> datetime:
+        return datetime(*args, **kwargs)
 
 
 def test_extract_no_promo_keywords():
