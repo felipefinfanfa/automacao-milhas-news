@@ -197,6 +197,12 @@
   color: #ef4444;
 }
 
+.slots-number {
+  color: #ef4444;
+  font-size: 1.15em;
+  font-weight: 600;
+}
+
 .slots-dot {
   width: 6px;
   height: 6px;

@@ -43,7 +43,7 @@ async function loadSlots() {
       text.textContent = 'Vagas esgotadas';
       badge.classList.add('full');
     } else {
-      text.textContent = `${data.remaining} vaga${data.remaining === 1 ? '' : 's'} restante${data.remaining === 1 ? '' : 's'}`;
+      text.innerHTML = `<span class="slots-number">${data.remaining}</span> vaga${data.remaining === 1 ? '' : 's'} restante${data.remaining === 1 ? '' : 's'}`;
     }
   } catch {
     badge.style.display = 'none';
