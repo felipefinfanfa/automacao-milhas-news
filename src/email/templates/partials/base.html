@@ -3,46 +3,56 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="color-scheme" content="light">
+  <meta name="color-scheme" content="dark">
   <title>Radar de Milhas — {{ email_title }}</title>
 </head>
-<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1e293b;-webkit-font-smoothing:antialiased;color-scheme:light">
+<!--
+  Fin Fanfa Design System — dark theme
+  Paleta: #01040A (base) · #070C18 (card) · #0E163B (border) · #1C60DA (azul) · #CED4F2 (texto)
+  Font stack: system sans (Geist não é suportada em clientes de email)
+-->
+<body style="margin:0;padding:0;background:#020617;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;color:#CED4F2;-webkit-font-smoothing:antialiased">
 
-  <table width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#f1f5f9">
+  <table width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#020617" style="background:#020617">
     <tr>
       <td align="center" style="padding:32px 12px 48px">
 
         <table width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:600px">
 
-          <!-- Barra de acento superior -->
+          <!-- Barra de acento superior — azul elétrico -->
           <tr>
-            <td height="3" bgcolor="#06b6d4" style="background:#06b6d4;border-radius:8px 8px 0 0;line-height:3px;font-size:3px">&#8203;</td>
+            <td height="3" bgcolor="#1C60DA" style="background:#1C60DA;border-radius:8px 8px 0 0;line-height:3px;font-size:3px">&#8203;</td>
           </tr>
 
           <!-- Card principal -->
           <tr>
-            <td bgcolor="#ffffff" style="background:#ffffff;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 12px 12px">
+            <td bgcolor="#070C18" style="background:#070C18;border:1px solid #0E163B;border-top:none;border-radius:0 0 14px 14px">
 
               <!-- Header -->
               <table width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
-                  <td style="padding:32px 32px 24px;border-bottom:1px solid #f1f5f9">
+                  <td style="padding:32px 32px 24px;border-bottom:1px solid #0E163B">
                     <table width="100%" cellspacing="0" cellpadding="0" border="0">
                       <tr>
                         <td>
-                          <div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#06b6d4;margin-bottom:10px">
+                          <div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1C60DA;margin-bottom:10px">
                             Radar de Milhas
                           </div>
-                          <div style="font-size:24px;font-weight:700;color:#0f172a;letter-spacing:-.3px;line-height:1.25">
+                          <div style="font-size:24px;font-weight:700;color:#CED4F2;letter-spacing:-.5px;line-height:1.2">
                             {{ header_title | safe }}
                           </div>
-                          <div style="font-size:12px;color:#94a3b8;margin-top:8px;text-transform:capitalize">
+                          <div style="font-size:12px;color:#455084;margin-top:8px;text-transform:capitalize">
                             {{ date_str }}
                           </div>
                         </td>
                         <td style="text-align:right;vertical-align:middle;padding-left:16px;width:52px">
-                          <div style="width:44px;height:44px;background:#ecfeff;border:1px solid #cffafe;border-radius:10px;text-align:center;line-height:44px;font-size:20px;color:#06b6d4">
-                            ✈
+                          <!-- F lettermark inline -->
+                          <div style="width:44px;height:44px;background:#0B1122;border:1px solid #1C60DA;border-radius:10px;text-align:center;line-height:44px">
+                            <svg width="16" height="24" viewBox="0 0 66.704 99.392" fill="#CED4F2" style="display:inline-block;vertical-align:middle">
+                              <path d="M 15.288 89.438 L 15.288 53.193 L 63.5 53.193 L 65.181 43.164 L 15.288 43.164 L 3.164 43.164 L 3.164 53.193 L 3.164 89.438 L 15.288 89.438 Z" fill-rule="nonzero"/>
+                              <path d="M 66.704 0 L 0 0 L 3.164 9.902 L 15.288 9.902 L 63.5 9.902 L 66.704 0 Z" fill-rule="nonzero"/>
+                              <path d="M 0 0 L 15.305 0.03 L 14.208 3.37 L 1.09 3.345 L 0 0 Z" fill-rule="nonzero" transform="matrix(-1,0.001,-0.001,-1,16.586,99.371)"/>
+                            </svg>
                           </div>
                         </td>
                       </tr>
@@ -54,7 +64,7 @@
               <!-- Body -->
               <table width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
-                  <td bgcolor="#ffffff" style="padding:24px 32px 8px;background:#ffffff">
+                  <td bgcolor="#070C18" style="padding:24px 32px 8px;background:#070C18">
                     {% block body %}{% endblock %}
                   </td>
                 </tr>
@@ -64,7 +74,7 @@
               <table width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
                   <td style="padding:8px 32px 0">
-                    <div style="height:1px;background:#f1f5f9;font-size:0;line-height:0">&#8203;</div>
+                    <div style="height:1px;background:#0E163B;font-size:0;line-height:0">&#8203;</div>
                   </td>
                 </tr>
               </table>
@@ -72,13 +82,13 @@
               <!-- Footer -->
               <table width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
-                  <td bgcolor="#ffffff" style="padding:20px 32px 28px;background:#ffffff;border-radius:0 0 12px 12px">
+                  <td bgcolor="#04080F" style="padding:20px 32px 28px;background:#04080F;border-radius:0 0 14px 14px">
                     {% if manage_url %}
                     <table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:16px">
                       <tr>
                         <td>
                           <a href="{{ manage_url }}"
-                             style="display:inline-block;background:#ecfeff;color:#0891b2;font-size:12px;font-weight:600;text-decoration:none;padding:8px 16px;border-radius:6px;border:1px solid #a5f3fc">
+                             style="display:inline-block;background:#0B1122;color:#7EB0FF;font-size:12px;font-weight:600;text-decoration:none;padding:8px 16px;border-radius:8px;border:1px solid #242F60">
                             Gerenciar prefer&ecirc;ncias
                           </a>
                         </td>
@@ -87,21 +97,21 @@
                     {% endif %}
                     <table width="100%" cellspacing="0" cellpadding="0" border="0">
                       <tr>
-                        <td style="font-size:11px;color:#94a3b8;line-height:1.6">
-                          Gerado automaticamente pelo <strong style="color:#64748b">Radar de Milhas</strong>.
+                        <td style="font-size:11px;color:#455084;line-height:1.7">
+                          Gerado automaticamente pelo <strong style="color:#707AA9">Radar de Milhas</strong>.
                           Dados baseados em informa&ccedil;&otilde;es p&uacute;blicas &mdash;
                           confira nas fontes originais antes de transferir pontos.
                           {% if unsubscribe_url %}
                           &nbsp;&middot;&nbsp;
                           <a href="{{ unsubscribe_url }}"
-                             style="color:#94a3b8;text-decoration:underline;font-size:11px">
+                             style="color:#455084;text-decoration:underline;font-size:11px">
                             Cancelar inscri&ccedil;&atilde;o
                           </a>
                           {% endif %}
                         </td>
                         <td style="text-align:right;vertical-align:middle;padding-left:16px;white-space:nowrap">
-                          <span style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#cbd5e1">
-                            Radar de Milhas
+                          <span style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#242F60">
+                            Fin Fanfa
                           </span>
                         </td>
                       </tr>

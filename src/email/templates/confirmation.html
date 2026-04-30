@@ -4,17 +4,22 @@
 
 <table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:28px">
   <tr>
-    <td style="background:#f0fdf4;border:1px solid #86efac;border-radius:14px;padding:24px 24px 20px">
+    <td style="background:#0B1122;border:1px solid #1C60DA;border-radius:12px;padding:24px 24px 20px">
       <table cellspacing="0" cellpadding="0" border="0" style="margin-bottom:16px">
         <tr>
-          <td style="width:40px;height:40px;background:#dcfce7;border-radius:10px;text-align:center;vertical-align:middle;font-size:20px">✓</td>
+          <td style="width:40px;height:40px;background:#0E1B3E;border:1px solid #1C60DA;border-radius:10px;text-align:center;vertical-align:middle">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7EB0FF" stroke-width="2.5" style="display:block;margin:0 auto">
+              <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </td>
           <td style="padding-left:12px;vertical-align:middle">
-            <div style="font-size:17px;font-weight:700;color:#166534">Preferências salvas com sucesso</div>
-            <div style="font-size:13px;color:#4ade80;margin-top:2px">Radar de Milhas está monitorando para você</div>
+            <div style="font-size:17px;font-weight:700;color:#CED4F2">Preferências salvas com sucesso</div>
+            <div style="font-size:13px;color:#455084;margin-top:2px">Radar de Milhas está monitorando para você</div>
           </td>
         </tr>
       </table>
-      <p style="font-size:14px;color:#166534;margin:0;line-height:1.7">
+      <p style="font-size:14px;color:#A5ACCD;margin:0;line-height:1.7">
         Assim que detectarmos uma promoção que corresponda ao seu perfil, você receberá
         um alerta por e-mail imediatamente.
       </p>
@@ -25,19 +30,19 @@
 <table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:28px">
   <tr>
     <td style="padding-bottom:14px">
-      <div style="font-size:15px;font-weight:700;color:#0f172a">O que monitoramos para você</div>
+      <div style="font-size:15px;font-weight:700;color:#CED4F2">O que monitoramos para você</div>
     </td>
   </tr>
   {% if transfer_pairs %}
   <tr>
     <td style="padding-bottom:12px">
-      <div style="font-size:12px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:#64748b;margin-bottom:8px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#455084;margin-bottom:8px">
         Bônus de transferência
       </div>
       {% set program_labels = {'smiles': 'Smiles', 'latam': 'LATAM Pass', 'azul': 'Azul', 'livelo': 'Livelo', 'esfera': 'Esfera', 'iupp': 'Iupp'} %}
       {% for pair in transfer_pairs %}
-      <span style="display:inline-block;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:20px;
-                   padding:5px 12px;font-size:13px;font-weight:600;color:#334155;margin:3px 4px 3px 0">
+      <span style="display:inline-block;background:#0B1122;border:1px solid #0E163B;border-radius:20px;
+                   padding:5px 12px;font-size:13px;font-weight:600;color:#A5ACCD;margin:3px 4px 3px 0">
         {{ program_labels.get(pair.source, pair.source) }} &#8594; {{ program_labels.get(pair.dest, pair.dest) }}
       </span>
       {% endfor %}
@@ -47,13 +52,13 @@
   {% if accumulation_programs %}
   <tr>
     <td>
-      <div style="font-size:12px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:#64748b;margin-bottom:8px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#455084;margin-bottom:8px">
         Acúmulo de pontos
       </div>
       {% set program_labels = {'smiles': 'Smiles', 'latam': 'LATAM Pass', 'azul': 'Azul', 'livelo': 'Livelo', 'esfera': 'Esfera', 'iupp': 'Iupp'} %}
       {% for prog in accumulation_programs %}
-      <span style="display:inline-block;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:20px;
-                   padding:5px 12px;font-size:13px;font-weight:600;color:#334155;margin:3px 4px 3px 0">
+      <span style="display:inline-block;background:#0B1122;border:1px solid #0E163B;border-radius:20px;
+                   padding:5px 12px;font-size:13px;font-weight:600;color:#A5ACCD;margin:3px 4px 3px 0">
         {{ program_labels.get(prog, prog) }}
       </span>
       {% endfor %}
@@ -62,7 +67,7 @@
   {% endif %}
   {% if not transfer_pairs and not accumulation_programs %}
   <tr>
-    <td style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;text-align:center;color:#94a3b8;font-size:13px">
+    <td style="background:#0B1122;border:1px solid #0E163B;border-radius:10px;padding:16px;text-align:center;color:#455084;font-size:13px">
       Nenhuma preferência configurada ainda.
     </td>
   </tr>
@@ -71,10 +76,10 @@
 
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr>
-    <td style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px 18px">
-      <p style="font-size:13px;color:#475569;margin:0;line-height:1.6">
-        Os scans rodam <strong style="color:#0f172a">6&times; por dia</strong> (06h, 09h, 12h, 15h, 18h e 21h).
-        Você recebe alerta em at&eacute; 1&nbsp;hora ap&oacute;s qualquer lançamento de promo&ccedil;&atilde;o.
+    <td style="background:#0B1122;border:1px solid #0E163B;border-radius:10px;padding:16px 18px">
+      <p style="font-size:13px;color:#707AA9;margin:0;line-height:1.6">
+        Os scans rodam <strong style="color:#CED4F2">6&times; por dia</strong> (06h, 09h, 12h, 15h, 18h e 21h).
+        Você recebe alerta em at&eacute; 1&nbsp;hora ap&oacute;s qualquer lan&ccedil;amento de promo&ccedil;&atilde;o.
       </p>
     </td>
   </tr>

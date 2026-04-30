@@ -21,6 +21,9 @@ venv/
 # Playwright
 playwright-report/
 
+# Portfolio (design reference, not deployed from here)
+portfolio/
+
 # Claude Code (configurações locais)
 .claude/settings.local.json
 .claude/skills/

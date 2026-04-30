@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Radar de Milhas — Alertas de Promoções</title>
   <meta name="description" content="Monitoramento em tempo real de promoções de transferência e acúmulo de milhas nos programas brasileiros.">
-  <link rel="icon" type="image/png" href="/static/assets/images/logo-monogram.png">
-  <link rel="stylesheet" href="/static/css/tokens.css?v=3">
-  <link rel="stylesheet" href="/static/css/app.css?v=3">
+  <link rel="icon" type="image/svg+xml" href="/static/assets/images/logo-blue-and-white.svg">
+  <link rel="stylesheet" href="/static/css/tokens.css?v=4">
+  <link rel="stylesheet" href="/static/css/app.css?v=4">
 </head>
 <body>
 
@@ -16,7 +16,27 @@
      ═══════════════════════════════════════════ -->
 <nav class="navbar" id="navbar">
   <a href="/" class="navbar-brand">
-    <img src="/static/assets/images/accent-bars.png" alt="Fin Fanfa" class="navbar-logo">
+    <!-- Wordmark white — Fin Fanfa Design System -->
+    <svg class="navbar-wordmark" viewBox="0 0 650 99" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Radar de Milhas">
+      <path d="M418.682 90V30.5859C418.682 27.793 418.597 25 418.428 22.207C418.258 19.4141 418.132 16.6211 418.047 13.8281V0.561523H407.891V90H418.682Z" fill="#CED4F2"/>
+      <path d="M469.59 59.2139C469.59 62.8955 469.844 68.9046 470.352 77.2412V90H480.508V0.561523H469.59V59.2139Z" fill="#CED4F2"/>
+      <path d="M423.312 2.6687V22.207L465.057 88.6453V68.8477L423.312 2.6687Z" fill="#CED4F2"/>
+      <path d="M129.291 90.4385V31.0244C129.291 28.2314 129.206 25.4385 129.037 22.6455C128.868 19.8525 128.741 17.0596 128.656 14.2666V1H118.5V90.4385H129.291Z" fill="#CED4F2"/>
+      <path d="M180.199 59.6523C180.199 63.334 180.453 69.3431 180.961 77.6797V90.4385H191.117V1H180.199V59.6523Z" fill="#CED4F2"/>
+      <path d="M133.921 3.10718V22.6455L175.666 89.0838V69.2862L133.921 3.10718Z" fill="#CED4F2"/>
+      <path d="M396.973 90L361.045 0.561523H356.919L355.459 5.13184L353.999 9.70215C354.972 12.9183 355.946 15.8805 356.919 18.5889C357.892 21.2972 358.675 23.3919 359.268 24.873L370.757 54.3896H337.305L333.623 63.8477H374.375L384.595 90H396.973Z" fill="#CED4F2"/>
+      <path d="M649.85 89.4385L613.922 0H609.796L608.336 4.57031L606.876 9.14062C607.849 12.3568 608.823 15.319 609.796 18.0273C610.769 20.7357 611.552 22.8304 612.145 24.3115L623.634 53.8281H590.182L586.5 63.2861H627.252L637.472 89.4385H649.85Z" fill="#CED4F2"/>
+      <path d="M96.0938 0.561523V87L83.9697 90V3.5L96.0938 0.561523Z" fill="#CED4F2"/>
+      <path d="M15.2881 90V53.7549H63.5L65.1807 43.7256H15.2881H3.16406V53.7549V90H15.2881Z" fill="#CED4F2"/>
+      <path d="M66.7041 0.561523H0L3.16406 10.4639H15.2881H63.5L66.7041 0.561523Z" fill="#CED4F2"/>
+      <path d="M260.788 89.4385V53.1934H309L310.681 43.1641H260.788H248.664V53.1934V89.4385H260.788Z" fill="#CED4F2"/>
+      <path d="M312.204 0H245.5L248.664 9.90234H260.788H309L312.204 0Z" fill="#CED4F2"/>
+      <path d="M513.788 89.4385V53.1934H562L563.681 43.1641H513.788H501.664V53.1934V89.4385H513.788Z" fill="#CED4F2"/>
+      <path d="M565.204 0H498.5L501.664 9.90234H513.788H562L565.204 0Z" fill="#CED4F2"/>
+      <path d="M16.6069 98.3701L1.61443 98.3613L2.68395 95.0192L15.5347 95.0268L16.6069 98.3701Z" fill="#CED4F2"/>
+      <path d="M261.81 98.3701L247.383 98.3605L248.412 95.0185L260.778 95.0267L261.81 98.3701Z" fill="#CED4F2"/>
+      <path d="M514.931 98.3701L500.505 98.3605L501.534 95.0185L513.899 95.0267L514.931 98.3701Z" fill="#CED4F2"/>
+    </svg>
   </a>
   <span class="navbar-tagline">Radar de Milhas</span>
 </nav>
@@ -27,15 +47,11 @@
      ═══════════════════════════════════════════ -->
 <section class="hero">
 
-  <!-- Vídeo de fundo (toca uma vez, muito suave) -->
   <div class="hero-video-wrap" aria-hidden="true">
     <video
       class="hero-video"
       src="/static/assets/videos/hero-bg.mp4"
-      autoplay
-      muted
-      playsinline
-      preload="auto"
+      autoplay muted playsinline preload="auto"
     ></video>
     <div class="hero-video-overlay"></div>
   </div>
@@ -100,9 +116,9 @@
 
     <div class="card">
       <div class="field-group">
-        <input type="text"  id="name-input"  placeholder="Nome completo"     autocomplete="name">
-        <input type="email" id="email-input" placeholder="seu@email.com"      autocomplete="email">
-        <input type="tel"   id="phone-input" placeholder="(11) 91234-5678"    autocomplete="tel">
+        <input type="text"  id="name-input"  placeholder="Nome completo"  autocomplete="name">
+        <input type="email" id="email-input" placeholder="seu@email.com"   autocomplete="email">
+        <input type="tel"   id="phone-input" placeholder="(11) 91234-5678" autocomplete="tel">
       </div>
       <button class="btn btn-primary" id="btn-continue" onclick="handleRegisterSubmit()">
         Continuar
@@ -111,7 +127,7 @@
     </div>
   </div>
 
-  <!-- ── Step 2: Preferências (só aparece após cadastro) ── -->
+  <!-- ── Step 2: Preferências ── -->
   <div id="step-prefs">
 
     <p class="section-label">Passo 2 de 2</p>
@@ -163,7 +179,7 @@
       </div>
     </div>
 
-    <!-- Acúmulo de Pontos -->
+    <!-- Acúmulo -->
     <div class="card reveal">
       <div class="card-title">Acúmulo de Pontos</div>
       <p class="card-desc">
@@ -195,6 +211,6 @@
 </footer>
 
 
-<script src="/static/js/app.js?v=3"></script>
+<script src="/static/js/app.js?v=4"></script>
 </body>
 </html>
