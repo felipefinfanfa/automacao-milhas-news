@@ -47,6 +47,7 @@ jobs:
     needs: build
     permissions:
       packages: read
+      contents: read
 
     steps:
       - name: Deploy via SSH
