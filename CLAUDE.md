@@ -86,13 +86,42 @@ SENTRY_DSN         # error reporting
 
 ## 5. Deployment
 
-**Local:** Rodar diretamente com Python. Banco de dados: Supabase de produção (via `DATABASE_URL` no `.env`).
+**Local:** Run directly with Python. Database: production Supabase (via `DATABASE_URL` in `.env`).
 
-**Produção (VPS):** Push para `master` no GitHub → VPS puxa automaticamente e sobe via Docker.
-- `Dockerfile` — imagem de produção (scheduler).
-- `docker-compose.yml` — orquestra scheduler + api com Traefik/HTTPS em `milhas.felipefinfanfa.com.br`.
+No local Docker environment — development always points to real Supabase.
 
-Não existe ambiente Docker local — desenvolvimento sempre aponta para o Supabase real.
+**Production (single-node Docker Swarm on Hostinger VPS):**
+
+Push to `master` triggers a two-job GitHub Actions workflow:
+1. **Build** — builds Docker image (`target: runtime`), pushes to `ghcr.io/felipefinfanfa/radar-de-milhas:latest` and `:<sha>`.
+2. **Deploy** — SSHes into VPS, runs `docker stack deploy -c docker-stack.yml radar-de-milhas`.
+
+Key files:
+- `Dockerfile` — multi-stage (base → deps → runtime). Playwright/Chromium in `deps`.
+- `docker-stack.yml` — Swarm stack: `scheduler` (1 replica, 1g) + `api` (1 replica, 512m). Traefik labels under `deploy.labels`.
+- `.github/workflows/deploy.yml` — CI/CD pipeline.
+
+Network: `felipefinfanfanet` is an overlay+attachable network created once on the VPS. Traefik connects to it as a standalone container.
+
+Secrets on VPS: `/opt/miles-radar/.env` — never committed.
+
+**Useful VPS commands:**
+```bash
+docker stack services radar-de-milhas
+docker stack ps radar-de-milhas --no-trunc
+docker service logs radar-de-milhas_api --tail 100 --follow
+docker service logs radar-de-milhas_scheduler --tail 100 --follow
+
+# Force redeploy without a push
+docker stack deploy --with-registry-auth -c /opt/miles-radar/docker-stack.yml radar-de-milhas
+
+# Rollback to a specific build
+docker service update --image ghcr.io/felipefinfanfa/radar-de-milhas:<SHA> radar-de-milhas_api
+docker service update --image ghcr.io/felipefinfanfa/radar-de-milhas:<SHA> radar-de-milhas_scheduler
+
+# Remove stack
+docker stack rm radar-de-milhas
+```
 
 ---
 

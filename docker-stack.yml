@@ -1,0 +1,56 @@
+version: "3.9"
+
+services:
+
+  scheduler:
+    image: ghcr.io/felipefinfanfa/radar-de-milhas:latest
+    env_file: .env
+    command: python -m src.scheduler
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 5
+        window: 120s
+      resources:
+        limits:
+          memory: 1g
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  api:
+    image: ghcr.io/felipefinfanfa/radar-de-milhas:latest
+    env_file: .env
+    command: uvicorn src.api.main:app --host 0.0.0.0 --port 8000
+    networks:
+      - felipefinfanfanet
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 5
+        window: 120s
+      resources:
+        limits:
+          memory: 512m
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.miles-radar.rule=Host(`milhas.felipefinfanfa.com.br`)"
+        - "traefik.http.routers.miles-radar.entrypoints=websecure"
+        - "traefik.http.routers.miles-radar.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.miles-radar.loadbalancer.server.port=8000"
+        - "traefik.http.services.miles-radar.loadbalancer.passHostHeader=true"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  felipefinfanfanet:
+    external: true
