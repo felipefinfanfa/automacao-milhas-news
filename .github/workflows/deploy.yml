@@ -70,9 +70,10 @@ jobs:
             # Ensure overlay network exists
             docker network create --driver overlay --attachable felipefinfanfanet 2>/dev/null || true
 
-            # Pull latest stack file
+            # Pull latest stack file (force-sync, discards any local changes on VPS)
             cd /opt/miles-radar
-            git pull https://x-access-token:${GHCR_TOKEN}@github.com/felipefinfanfa/automacao-milhas-news.git master
+            git fetch https://x-access-token:${GHCR_TOKEN}@github.com/felipefinfanfa/automacao-milhas-news.git master
+            git reset --hard FETCH_HEAD
 
             # Guard: .env must exist
             test -f .env || { echo "ERROR: /opt/miles-radar/.env missing — aborting"; exit 1; }
