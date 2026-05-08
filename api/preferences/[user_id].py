@@ -40,6 +40,14 @@ def _parse_user_id(path: str) -> str:
     return path.split("?")[0].rstrip("/").split("/")[-1]
 
 
+def _is_valid_uuid(value: str) -> bool:
+    try:
+        uuid.UUID(value)
+        return True
+    except ValueError:
+        return False
+
+
 class handler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
         self.send_response(200)
@@ -50,6 +58,9 @@ class handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         user_id = _parse_user_id(self.path)
+        if not _is_valid_uuid(user_id):
+            _json_response(self, 404, {"detail": "Preferências não encontradas"})
+            return
         try:
             with _SessionFactory() as session:
                 row = session.query(UserPreferences).filter_by(user_id=user_id).first()
@@ -62,6 +73,9 @@ class handler(BaseHTTPRequestHandler):
 
     def do_PUT(self):
         user_id = _parse_user_id(self.path)
+        if not _is_valid_uuid(user_id):
+            _json_response(self, 400, {"detail": "user_id inválido"})
+            return
         try:
             length = int(self.headers.get("Content-Length", 0))
             body = json.loads(self.rfile.read(length))

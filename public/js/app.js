@@ -24,6 +24,9 @@ const ALL_PROGRAMS = [...new Map(
   [...TRANSFER_SOURCES, ...TRANSFER_DESTS].map(p => [p.id, p])
 ).values()];
 
+const _UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function isValidUserId(id) { return id && _UUID_RE.test(id); }
+
 let userId    = localStorage.getItem('milesRadarUserId');
 let userEmail = localStorage.getItem('milesRadarEmail');
 let selectedAccum   = new Set();
@@ -316,6 +319,8 @@ async function loadPreferences() {
 
 /* ── Save preferences ── */
 async function savePreferences() {
+  if (!isValidUserId(userId)) return;
+
   const btn       = document.getElementById('btn-save');
   const successEl = document.getElementById('save-success');
   const errorEl   = document.getElementById('save-error');
@@ -409,15 +414,15 @@ function init() {
 
   const params   = new URLSearchParams(window.location.search);
   const uidParam = params.get('user_id');
-  if (uidParam) {
+  if (uidParam && isValidUserId(uidParam)) {
     userId = uidParam;
     localStorage.setItem('milesRadarUserId', uidParam);
   }
 
-  if (userId && userEmail) {
+  if (isValidUserId(userId) && userEmail) {
     showPrefsStep(userEmail);
     loadPreferences();
-  } else if (userId && !userEmail) {
+  } else if (isValidUserId(userId) && !userEmail) {
     loadAndShowPrefs();
   }
 
