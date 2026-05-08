@@ -38,4 +38,5 @@ jobs:
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           APP_ENV: production
+          PYTHONPATH: ${{ github.workspace }}
         run: python scripts/run_pipeline.py --tier 1
