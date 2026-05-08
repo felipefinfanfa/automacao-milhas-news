@@ -1,0 +1,41 @@
+name: Pipeline — Tier 1
+
+on:
+  schedule:
+    - cron: '0 12 * * *'   # 09:00 BRT (UTC-3)
+    - cron: '0 15 * * *'   # 12:00 BRT
+    - cron: '0 18 * * *'   # 15:00 BRT
+    - cron: '0 0 * * *'    # 21:00 BRT
+  workflow_dispatch:
+    inputs:
+      tier:
+        description: 'Tier to run (1 or 2)'
+        required: false
+        default: '1'
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run pipeline tier 1
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          DIGEST_RECIPIENT: ${{ secrets.DIGEST_RECIPIENT }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          APP_ENV: production
+        run: python scripts/run_pipeline.py --tier 1
