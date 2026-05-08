@@ -6,9 +6,9 @@
 
 ## 1. Project
 
-**What it does:** Monitors transfer and accumulation promotions across Brazilian miles programs (Smiles, Azul, LATAM, Livelo, Esfera) and sends an immediate email alert for every new promotion detected, for up to 3 consecutive days. Target operational cost: zero (except hosting).
+**What it does:** Monitors transfer and accumulation promotions across Brazilian miles programs (Smiles, Azul, LATAM, Livelo, Esfera) and sends an immediate email alert for every new promotion detected. Target operational cost: zero (except hosting).
 
-**Trigger:** Cron at 6 times/day (06h, 09h, 12h, 15h, 18h, 21h BRT). Email sent whenever a new promotion is detected — no routine digest.
+**Trigger:** Cron via GitHub Actions at 6 times/day (06h, 09h, 12h, 15h, 18h, 21h BRT). Email sent whenever a new active promotion is detected — no routine digest.
 
 **Output:** Consolidated email per user with active promotions matching their preferences.
 
@@ -22,10 +22,10 @@
 
 **Flow:**
 ```
-[Cron] → [Monitors] → [Extractor] → [Dedup] → [Preference Filter] → [Email Dispatcher]
+[GitHub Actions Cron] → [Monitors] → [Extractor] → [Dedup] → [Preference Filter] → [Email Dispatcher]
 ```
 
-Monitors run in parallel across distinct domains. Each step is a deterministic function. No agent, no memory, no complex state.
+Monitors run sequentially by tier. Each step is a deterministic function. No agent, no memory, no complex state.
 
 ---
 
@@ -34,13 +34,10 @@ Monitors run in parallel across distinct domains. Each step is a deterministic f
 **Runtime:** Python 3.12
 
 **Dependencies:**
-- `playwright` + `playwright-stealth` — JS-heavy scraping and visual diff
-- `cloudscraper` — Cloudflare bypass
+- `cloudscraper` — Cloudflare bypass for program sites
 - `httpx` — async HTTP for RSS, sitemaps and public APIs
 - `beautifulsoup4` + `lxml` + `feedparser` — HTML and RSS parsing
-- `imagehash` — visual diff via perceptual hash
 - `pydantic v2` — schema validation
-- `apscheduler` — scan and email scheduling
 - `sqlalchemy 2` + `alembic` — ORM and migrations
 - `supabase-py` — user auth
 - `jinja2` — email templates
@@ -58,6 +55,8 @@ SUPABASE_KEY       # service key
 DATABASE_URL       # PostgreSQL connection string
 RESEND_API_KEY     # or GMAIL_APP_PASSWORD as fallback
 SENTRY_DSN         # error reporting
+SLACK_WEBHOOK_URL  # pipeline error alerts (GitHub Actions secret)
+DIGEST_RECIPIENT   # fallback email for pipeline test sends
 ```
 
 ---
@@ -71,15 +70,20 @@ SENTRY_DSN         # error reporting
     /monitors       # one file per detection method — all return list[RawSignal]
   /tools            # HTTP utilities used by monitors
   /config           # settings via env vars (pydantic-settings)
-  /api              # FastAPI — user preferences
-  /email/templates  # Jinja2 — day1, day2, day3, confirmation
-  /scheduler        # APScheduler entry point; /jobs with tiers 1–3
+  /api              # Pydantic schemas only (reused by Vercel handlers)
+    /schemas
+  /email/templates  # Jinja2 — day1, confirmation
   /db/migrations    # versioned Alembic migrations
+/api                # Vercel Python serverless handlers (one file per route)
+  /preferences
+  /unsubscribe
+/public             # Static registration website (served by Vercel)
+/scripts
+  run_pipeline.py   # GitHub Actions entry point — python scripts/run_pipeline.py --tier N
 /tests
   /unit
   /integration
   /fixtures         # real HTML and RSS for mocks — never fabricate responses
-/scripts            # manual entrypoints — all support --dry-run
 ```
 
 ---
@@ -88,40 +92,25 @@ SENTRY_DSN         # error reporting
 
 **Local:** Run directly with Python. Database: production Supabase (via `DATABASE_URL` in `.env`).
 
-No local Docker environment — development always points to real Supabase.
+No Docker environment — development always points to real Supabase.
 
-**Production (single-node Docker Swarm on Hostinger VPS):**
+**Automation (GitHub Actions):**
+- Trigger: 6 cron schedules/day across 2 workflow files
+- `pipeline-tier1.yml` — runs at 09h, 12h, 15h, 21h BRT (Tier 1 monitors)
+- `pipeline-tier2.yml` — runs at 06h, 18h BRT (Tier 1 + 2 monitors)
+- Entry point: `python scripts/run_pipeline.py --tier N`
+- Secrets required: `DATABASE_URL`, `RESEND_API_KEY`, `GMAIL_USER`, `GMAIL_APP_PASSWORD`, `DIGEST_RECIPIENT`, `SENTRY_DSN`, `SLACK_WEBHOOK_URL`
+- Each run logs a record in `automation_logs`. Errors trigger a Slack alert.
 
-Push to `master` triggers a two-job GitHub Actions workflow:
-1. **Build** — builds Docker image (`target: runtime`), pushes to `ghcr.io/felipefinfanfa/radar-de-milhas:latest` and `:<sha>`.
-2. **Deploy** — SSHes into VPS, runs `docker stack deploy -c docker-stack.yml radar-de-milhas`.
+**Registration site (Vercel):**
+- `public/` — static frontend served at `/`
+- `api/` — Python serverless handlers at `/api/*`
+- Environment variables must be configured in the Vercel project dashboard
+- `api/requirements.txt` — lighter dependencies for Vercel functions
 
-Key files:
-- `Dockerfile` — multi-stage (base → deps → runtime). Playwright/Chromium in `deps`.
-- `docker-stack.yml` — Swarm stack: `scheduler` (1 replica, 1g) + `api` (1 replica, 512m). Traefik labels under `deploy.labels`.
-- `.github/workflows/deploy.yml` — CI/CD pipeline.
-
-Network: `felipefinfanfanet` is an overlay+attachable network created once on the VPS. Traefik connects to it as a standalone container.
-
-Secrets on VPS: `/opt/miles-radar/.env` — never committed.
-
-**Useful VPS commands:**
-```bash
-docker stack services radar-de-milhas
-docker stack ps radar-de-milhas --no-trunc
-docker service logs radar-de-milhas_api --tail 100 --follow
-docker service logs radar-de-milhas_scheduler --tail 100 --follow
-
-# Force redeploy without a push
-docker stack deploy --with-registry-auth -c /opt/miles-radar/docker-stack.yml radar-de-milhas
-
-# Rollback to a specific build
-docker service update --image ghcr.io/felipefinfanfa/radar-de-milhas:<SHA> radar-de-milhas_api
-docker service update --image ghcr.io/felipefinfanfa/radar-de-milhas:<SHA> radar-de-milhas_scheduler
-
-# Remove stack
-docker stack rm radar-de-milhas
-```
+**Database (Supabase):**
+- Migrations via Alembic: `alembic upgrade head`
+- `supabase-keepalive.yml` runs every 5 days to keep the free tier active
 
 ---
 
@@ -129,21 +118,17 @@ docker stack rm radar-de-milhas
 
 ```bash
 # Setup (primeira vez)
-pip install -r requirements.txt && playwright install chromium
+pip install -r requirements.txt
 
 # Migrations (rodar no Supabase via DATABASE_URL do .env)
 alembic upgrade head
 
-# Scan imediato (sem scheduling)
-python scripts/run_now.py            # Tier 1 — fastest
-python scripts/run_now.py --tier 2   # Tier 1 + Tier 2
+# Pipeline manual (local ou CI)
+python scripts/run_pipeline.py --tier 1
+python scripts/run_pipeline.py --tier 2
 
-# Scheduler
-python -m src.scheduler              # 6 crons/day em loop
-python -m src.scheduler --dry-run    # 1 ciclo Tier 3 completo, sem emails
-
-# API de preferências
-uvicorn src.api.main:app --reload
+# API local dev (Vercel CLI)
+vercel dev
 
 # Qualidade — obrigatório antes de declarar qualquer tarefa concluída
 ruff check . && ruff format --check . && mypy src/
@@ -170,16 +155,21 @@ pytest tests/integration/
 **Secrets:** NEVER commit `.env`. Hardcoded credential detected: stop immediately and report.
 
 **Idempotency:**
-- Transfer: `sha256(source_program + dest_program + bonus_pct + start_date)`
-- Accumulation: `sha256(program + multiplier + trigger + start_date)`
+- Transfer: `sha256(origin_program + dest_program + bonus_pct + promo_type + ends_at.date())`
+- Accumulation: same fingerprint structure via `extractor._fingerprint()`
 
-**Email sequence:**
-- Day 1: immediate send on first detection.
-- Day 2 and 3: exactly 24h and 48h after Day 1 via APScheduler one-shot jobs.
-- `email_log(user_id, promo_id, day_number, sent_at)` is the source of truth — check before any send.
-- NEVER send if `promotion.valid_until < now()`. Extending end_date does not restart the sequence.
+**Email sequence (day 1 only):**
+- Immediate send on first detection of an active promotion.
+- `email_log(user_id, promo_id, day_number=1)` is the source of truth — check before any send.
+- NEVER send if `promotion.ends_at < now()` or `promotion.ends_at is None`.
+
+**Promotion validity:**
+- `ends_at` is REQUIRED — promotions without an end date are discarded by the extractor.
+- `starts_at` is optional — if missing, treat as active from publication date.
+- "Hoje é o último dia" / "último dia" / "encerra hoje" → `ends_at = article published_date` (end of day).
+- The extractor uses `signal.fetched_at` as the article reference date. RSS monitors set `fetched_at = entry.published_parsed`.
 
 **Data integrity:**
 - Schema changes via versioned Alembic migration — zero manual `ALTER TABLE`.
 - NEVER delete `email_log` records.
-- `backfill_promos.py`: NEVER run without `--dry-run` first.
+- NEVER delete `automation_logs` records.
