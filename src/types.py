@@ -16,7 +16,6 @@ SourceType = Literal[
     "sitemap",
     "robots",
     "news_scraper",
-    "visual_diff",
 ]
 
 
