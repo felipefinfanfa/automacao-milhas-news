@@ -1,81 +1,53 @@
 {% extends "partials/base.html" %}
-
 {% block body %}
 
-{% set transfer_promos = transfer_promos if transfer_promos is defined else [] %}
-{% set accum_promos    = accum_promos    if accum_promos    is defined else [] %}
+{% set _tp = transfer_promos if transfer_promos is defined else [] %}
+{% set _ap = accum_promos    if accum_promos    is defined else [] %}
 
-{# ── Transferências ── #}
-{% if transfer_promos %}
-<table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:22px">
-  <tr>
-    <td style="padding-bottom:14px">
-      <table cellspacing="0" cellpadding="0" border="0">
-        <tr>
-          <td width="30" height="30" bgcolor="#0F1A36"
-              style="background:#0F1A36;border:1px solid rgba(28,96,218,0.45);border-radius:8px;text-align:center;vertical-align:middle;font-size:14px;color:#7EB0FF;mso-border-alt:1px solid #1C60DA">
-            &#8644;
-          </td>
-          <td style="padding-left:11px;vertical-align:middle">
-            <p style="font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:#1C60DA;margin:0 0 2px">Transfer&#234;ncias</p>
-            <p style="font-size:12px;color:#455084;margin:0;letter-spacing:0.2px">
-              {{ transfer_promos|length }} promo&#231;&#227;o{% if transfer_promos|length > 1 %}&#245;es{% endif %} detectada{% if transfer_promos|length > 1 %}s{% endif %}
-            </p>
-          </td>
-        </tr>
-      </table>
+{# ─── Transferências ─── #}
+{% if _tp %}
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px">
+<tr><td style="padding-bottom:13px">
+  <table cellpadding="0" cellspacing="0" border="0"><tr>
+    <td valign="middle" style="padding-right:10px">
+      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:10px;font-weight:700;color:#1C60DA;letter-spacing:2.5px;text-transform:uppercase">TRANSFER&#202;NCIAS</div>
+      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:12px;color:#2B3A6E;margin-top:2px">
+        {{ _tp|length }}&nbsp;promo&#231;&#227;o{% if _tp|length > 1 %}&#245;es{% endif %} encontrada{% if _tp|length > 1 %}s{% endif %}
+      </div>
     </td>
-  </tr>
-  <tr>
-    <td>
-      {% for promo in transfer_promos %}
-        {% include "partials/_promo_card.html" %}
-      {% endfor %}
-    </td>
-  </tr>
+  </tr></table>
+</td></tr>
+<tr><td>
+  {% for promo in _tp %}{% include "partials/_promo_card.html" %}{% endfor %}
+</td></tr>
 </table>
 {% endif %}
 
-{# ── Acúmulo ── #}
-{% if accum_promos %}
-<table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:22px">
-  <tr>
-    <td style="padding-bottom:14px">
-      <table cellspacing="0" cellpadding="0" border="0">
-        <tr>
-          <td width="30" height="30" bgcolor="#0B1122"
-              style="background:#0B1122;border:1px solid rgba(206,212,242,0.12);border-radius:8px;text-align:center;vertical-align:middle;font-size:14px;color:#A5ACCD;mso-border-alt:1px solid #1A2550">
-            &#9733;
-          </td>
-          <td style="padding-left:11px;vertical-align:middle">
-            <p style="font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:#707AA9;margin:0 0 2px">Ac&#250;mulo</p>
-            <p style="font-size:12px;color:#455084;margin:0;letter-spacing:0.2px">
-              {{ accum_promos|length }} promo&#231;&#227;o{% if accum_promos|length > 1 %}&#245;es{% endif %} detectada{% if accum_promos|length > 1 %}s{% endif %}
-            </p>
-          </td>
-        </tr>
-      </table>
+{# ─── Acúmulo ─── #}
+{% if _ap %}
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px">
+<tr><td style="padding-bottom:13px">
+  <table cellpadding="0" cellspacing="0" border="0"><tr>
+    <td valign="middle" style="padding-right:10px">
+      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:10px;font-weight:700;color:#707AA9;letter-spacing:2.5px;text-transform:uppercase">AC&#218;MULO</div>
+      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:12px;color:#2B3A6E;margin-top:2px">
+        {{ _ap|length }}&nbsp;promo&#231;&#227;o{% if _ap|length > 1 %}&#245;es{% endif %} encontrada{% if _ap|length > 1 %}s{% endif %}
+      </div>
     </td>
-  </tr>
-  <tr>
-    <td>
-      {% for promo in accum_promos %}
-        {% include "partials/_promo_card.html" %}
-      {% endfor %}
-    </td>
-  </tr>
+  </tr></table>
+</td></tr>
+<tr><td>
+  {% for promo in _ap %}{% include "partials/_promo_card.html" %}{% endfor %}
+</td></tr>
 </table>
 {% endif %}
 
-{# ── Estado vazio ── #}
-{% if not transfer_promos and not accum_promos %}
-<table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:22px">
-  <tr>
-    <td bgcolor="#0B1122"
-        style="background:#0B1122;border:1px solid rgba(206,212,242,0.10);border-radius:12px;padding:24px;text-align:center;color:#455084;font-size:14px;mso-border-alt:1px solid #1A2550">
-      Nenhuma promo&#231;&#227;o nova desde o &#250;ltimo scan.
-    </td>
-  </tr>
+{# ─── Vazio ─── #}
+{% if not _tp and not _ap %}
+<table class="iblk" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px">
+<tr><td bgcolor="#0B1122" style="background:#0B1122;border:1px solid #141E38;border-radius:10px;padding:22px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:13px;color:#2B3A6E">
+  Nenhuma promo&#231;&#227;o nova desde o &#250;ltimo scan.
+</td></tr>
 </table>
 {% endif %}
 

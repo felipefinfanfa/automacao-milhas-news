@@ -1,96 +1,75 @@
 {% extends "partials/base.html" %}
-
 {% block body %}
 
-{# ── Success block ── #}
-<table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:26px">
-  <tr>
-    <td bgcolor="#0D1A3A"
-        style="background:#0D1A3A;border:1px solid rgba(28,96,218,0.35);border-radius:12px;padding:20px 22px;mso-border-alt:1px solid #1C60DA">
-      <table cellspacing="0" cellpadding="0" border="0" style="margin-bottom:14px;width:100%">
-        <tr>
-          <td width="40" height="40" bgcolor="#102048"
-              style="background:#102048;border:1px solid rgba(28,96,218,0.5);border-radius:10px;text-align:center;vertical-align:middle;font-size:18px;mso-border-alt:1px solid #1C60DA">
-            &#10003;
-          </td>
-          <td style="padding-left:14px;vertical-align:middle">
-            <p style="font-size:16px;font-weight:700;color:#CED4F2;letter-spacing:-0.3px;margin:0 0 3px">Prefer&#234;ncias salvas com sucesso</p>
-            <p style="font-size:12px;color:#455084;margin:0;letter-spacing:0.2px">Radar de Milhas est&#225; monitorando para voc&#234;</p>
-          </td>
-        </tr>
-      </table>
-      <p style="font-size:14px;color:#A5ACCD;margin:0;line-height:1.75">
-        Assim que detectarmos uma promo&#231;&#227;o que corresponda ao seu perfil, voc&#234; receber&#225;
-        um alerta por e-mail imediatamente.
-      </p>
+{% set _pl = {'smiles':'Smiles','latam':'LATAM Pass','azul':'Azul','livelo':'Livelo','esfera':'Esfera','iupp':'Iupp'} %}
+{% set _pc = {'smiles':'#f97316','latam':'#0ea5e9','azul':'#2563eb','livelo':'#7c3aed','esfera':'#dc2626','iupp':'#d97706'} %}
+
+{# ─── Bloco de sucesso ─── #}
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px">
+<tr><td bgcolor="#0D1A3A" style="background:#0D1A3A;border:1px solid #1C60DA;border-radius:12px;padding:20px 22px">
+
+  <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px"><tr>
+    <td width="38" height="38" bgcolor="#102048" align="center" valign="middle"
+        style="background:#102048;border:1px solid #1C60DA;border-radius:9px;font-size:18px;color:#7EB0FF;font-family:Arial,sans-serif">
+      &#10003;
     </td>
-  </tr>
+    <td valign="middle" style="padding-left:13px">
+      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:16px;font-weight:700;color:#CED4F2;letter-spacing:-0.3px">Prefer&#234;ncias salvas</div>
+      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:12px;color:#2B3A6E;margin-top:3px">Radar de Milhas est&#225; monitorando para voc&#234;</div>
+    </td>
+  </tr></table>
+
+  <p style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:14px;color:#A5ACCD;margin:0;line-height:1.75">
+    Assim que detectarmos uma promo&#231;&#227;o compatível com seu perfil, voc&#234; recebe
+    um alerta por e-mail imediatamente.
+  </p>
+
+</td></tr>
 </table>
 
-{# ── O que monitoramos ── #}
-<table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:24px">
-  <tr>
-    <td style="padding-bottom:16px">
-      <p style="font-size:15px;font-weight:700;color:#CED4F2;letter-spacing:-0.3px;margin:0">O que monitoramos para voc&#234;</p>
-    </td>
-  </tr>
+{# ─── O que monitoramos ─── #}
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:22px">
 
-  {% set program_labels = {'smiles': 'Smiles', 'latam': 'LATAM Pass', 'azul': 'Azul', 'livelo': 'Livelo', 'esfera': 'Esfera', 'iupp': 'Iupp'} %}
-  {% set program_accent = {'smiles': '#f97316', 'latam': '#0ea5e9', 'azul': '#2563eb', 'livelo': '#7c3aed', 'esfera': '#dc2626', 'iupp': '#d97706'} %}
+  <tr><td style="padding-bottom:14px">
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:15px;font-weight:700;color:#CED4F2;letter-spacing:-0.3px">O que monitoramos para voc&#234;</div>
+  </td></tr>
 
   {% if transfer_pairs %}
-  <tr>
-    <td style="padding-bottom:14px">
-      <p style="font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:#455084;margin:0 0 10px">
-        B&#244;nus de transfer&#234;ncia
-      </p>
-      {% for pair in transfer_pairs %}
-      <span style="display:inline-block;background:#0B1122;border:1px solid rgba(206,212,242,0.12);border-radius:20px;padding:5px 13px;font-size:12px;font-weight:600;margin:3px 5px 3px 0;letter-spacing:-0.1px;mso-border-alt:1px solid #1A2550">
-        <span style="color:{{ program_accent.get(pair.source, '#A5ACCD') }}">{{ program_labels.get(pair.source, pair.source) }}</span>
-        <span style="color:#455084"> &#8594; </span>
-        <span style="color:{{ program_accent.get(pair.dest, '#A5ACCD') }}">{{ program_labels.get(pair.dest, pair.dest) }}</span>
-      </span>
-      {% endfor %}
-    </td>
-  </tr>
+  <tr><td style="padding-bottom:14px">
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:10px;font-weight:700;color:#2B3A6E;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:10px">B&#212;NUS DE TRANSFER&#202;NCIA</div>
+    {% for pair in transfer_pairs %}
+    <span style="display:inline-block;background:#0B1122;border:1px solid #141E38;border-radius:20px;padding:5px 13px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:12px;font-weight:600;margin:3px 4px 3px 0">
+      <span style="color:{{ _pc.get(pair.source, '#A5ACCD') }}">{{ _pl.get(pair.source, pair.source) }}</span><span style="color:#2B3A6E"> &#8594; </span><span style="color:{{ _pc.get(pair.dest, '#A5ACCD') }}">{{ _pl.get(pair.dest, pair.dest) }}</span>
+    </span>
+    {% endfor %}
+  </td></tr>
   {% endif %}
 
   {% if accumulation_programs %}
-  <tr>
-    <td style="padding-bottom:6px">
-      <p style="font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:#455084;margin:0 0 10px">
-        Ac&#250;mulo de pontos
-      </p>
-      {% for prog in accumulation_programs %}
-      <span style="display:inline-block;background:#0B1122;border:1px solid rgba(206,212,242,0.12);border-radius:20px;padding:5px 13px;font-size:12px;font-weight:600;margin:3px 5px 3px 0;color:{{ program_accent.get(prog, '#A5ACCD') }};letter-spacing:-0.1px;mso-border-alt:1px solid #1A2550">
-        {{ program_labels.get(prog, prog) }}
-      </span>
-      {% endfor %}
-    </td>
-  </tr>
+  <tr><td>
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:10px;font-weight:700;color:#2B3A6E;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:10px">AC&#218;MULO DE PONTOS</div>
+    {% for p in accumulation_programs %}
+    <span style="display:inline-block;background:#0B1122;border:1px solid #141E38;border-radius:20px;padding:5px 13px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:12px;font-weight:700;color:{{ _pc.get(p, '#A5ACCD') }};margin:3px 4px 3px 0">{{ _pl.get(p, p) }}</span>
+    {% endfor %}
+  </td></tr>
   {% endif %}
 
   {% if not transfer_pairs and not accumulation_programs %}
-  <tr>
-    <td bgcolor="#0B1122"
-        style="background:#0B1122;border:1px solid rgba(206,212,242,0.10);border-radius:12px;padding:16px;text-align:center;color:#455084;font-size:13px;mso-border-alt:1px solid #1A2550">
-      Nenhuma prefer&#234;ncia configurada ainda.
-    </td>
-  </tr>
+  <tr><td class="iblk" bgcolor="#0B1122" style="background:#0B1122;border:1px solid #141E38;border-radius:10px;padding:16px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:13px;color:#2B3A6E">
+    Nenhuma prefer&#234;ncia configurada ainda.
+  </td></tr>
   {% endif %}
+
 </table>
 
-{# ── Frequência ── #}
-<table width="100%" cellspacing="0" cellpadding="0" border="0">
-  <tr>
-    <td bgcolor="#0B1122"
-        style="background:#0B1122;border:1px solid rgba(206,212,242,0.10);border-radius:12px;padding:16px 18px;mso-border-alt:1px solid #1A2550">
-      <p style="font-size:13px;color:#707AA9;margin:0;line-height:1.75">
-        Os scans rodam <strong style="color:#CED4F2">6&#215; por dia</strong> (06h, 09h, 12h, 15h, 18h e 21h).
-        Voc&#234; recebe alerta em at&#233; <strong style="color:#CED4F2">1&nbsp;hora</strong> ap&#243;s qualquer lan&#231;amento de promo&#231;&#227;o.
-      </p>
-    </td>
-  </tr>
+{# ─── Frequência ─── #}
+<table class="iblk" width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr><td bgcolor="#0B1122" style="background:#0B1122;border:1px solid #141E38;border-radius:10px;padding:15px 18px">
+  <p style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:13px;color:#455084;margin:0;line-height:1.75">
+    Os scans rodam <strong style="color:#CED4F2">6&#215; por dia</strong> (06h, 09h, 12h, 15h, 18h e 21h).
+    Alerta em at&#233; <strong style="color:#CED4F2">1&nbsp;hora</strong> de qualquer promo&#231;&#227;o nova.
+  </p>
+</td></tr>
 </table>
 
 {% endblock %}
