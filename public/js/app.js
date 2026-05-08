@@ -37,7 +37,7 @@ async function loadSlots() {
   const text  = document.getElementById('slots-text');
   if (!badge || !text) return;
   try {
-    const res  = await fetch('/preferences/slots');
+    const res  = await fetch('/api/preferences/slots');
     const data = await res.json();
     if (data.remaining <= 0) {
       text.textContent = 'Vagas esgotadas';
@@ -243,7 +243,7 @@ async function handleRegisterSubmit() {
   btn.innerHTML = '<span class="spinner"></span>';
 
   try {
-    const res = await fetch('/preferences/register', {
+    const res = await fetch('/api/preferences/register', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ name, email, phone }),
@@ -275,7 +275,7 @@ async function handleRegisterSubmit() {
 /* ── Load preferences from server and show step 2 (used from email link) ── */
 async function loadAndShowPrefs() {
   try {
-    const res = await fetch(`/preferences/${userId}`);
+    const res = await fetch(`/api/preferences/${userId}`);
     if (!res.ok) {
       userId = null;
       localStorage.removeItem('milesRadarUserId');
@@ -296,7 +296,7 @@ async function loadAndShowPrefs() {
 /* ── Load existing preferences ── */
 async function loadPreferences() {
   try {
-    const res = await fetch(`/preferences/${userId}`);
+    const res = await fetch(`/api/preferences/${userId}`);
     if (!res.ok) return;
 
     const data = await res.json();
@@ -337,7 +337,7 @@ async function savePreferences() {
   };
 
   try {
-    const res = await fetch(`/preferences/${userId}`, {
+    const res = await fetch(`/api/preferences/${userId}`, {
       method:  'PUT',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify(payload),
