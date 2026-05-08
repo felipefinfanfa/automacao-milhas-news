@@ -128,7 +128,6 @@ def _dispatch_emails(session: Any) -> int:
         .filter(
             Promotion.ends_at.isnot(None),
             Promotion.ends_at > now,
-            Promotion.bonus_percent.isnot(None),
             (Promotion.starts_at == None) | (Promotion.starts_at <= now),  # noqa: E711
         )
         .order_by(Promotion.bonus_percent.desc().nullslast())
