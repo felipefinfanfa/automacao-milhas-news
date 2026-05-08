@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-import pytest
-
 from src.pipeline.extractor import (
     _extract_bonus_pct,
     _extract_date_range,
@@ -121,6 +119,7 @@ def test_extract_no_content():
 
 
 # --- Natural language date extraction ---
+
 
 def test_natural_end_date_hoje(monkeypatch):
     fixed = datetime(2026, 4, 27, 12, 0, 0, tzinfo=UTC)

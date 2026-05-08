@@ -6,8 +6,8 @@ from http.server import BaseHTTPRequestHandler
 from textwrap import dedent
 from typing import Any
 
-from src.db.models import UserPreferences, create_engine_from_url, get_session_factory
 from src.config.settings import settings
+from src.db.models import UserPreferences, create_engine_from_url, get_session_factory
 
 _engine = create_engine_from_url(settings.database_url)
 _SessionFactory = get_session_factory(_engine)
@@ -68,19 +68,17 @@ class handler(BaseHTTPRequestHandler):
 
         try:
             with _SessionFactory() as session:
-                row = session.query(UserPreferences).filter_by(
-                    unsubscribe_token=token_uuid
-                ).first()
+                row = session.query(UserPreferences).filter_by(unsubscribe_token=token_uuid).first()
                 if not row:
                     _html_response(
-                        self, 404,
-                        _unsubscribe_html("Usuário não encontrado ou já removido.")
+                        self, 404, _unsubscribe_html("Usuário não encontrado ou já removido.")
                     )
                     return
                 session.delete(row)
                 session.commit()
             _html_response(
-                self, 200,
+                self,
+                200,
                 _unsubscribe_html(
                     "Inscrição cancelada com sucesso. "
                     "Seus dados foram permanentemente removidos."

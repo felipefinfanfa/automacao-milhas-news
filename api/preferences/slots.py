@@ -27,10 +27,14 @@ class handler(BaseHTTPRequestHandler):
             with _SessionFactory() as session:
                 used = session.query(UserPreferences).count()
             total = settings.max_users
-            _json_response(self, 200, {
-                "used": used,
-                "total": total,
-                "remaining": max(0, total - used),
-            })
+            _json_response(
+                self,
+                200,
+                {
+                    "used": used,
+                    "total": total,
+                    "remaining": max(0, total - used),
+                },
+            )
         except Exception as exc:
             _json_response(self, 500, {"detail": str(exc)})

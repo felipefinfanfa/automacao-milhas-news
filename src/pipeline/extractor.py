@@ -69,8 +69,7 @@ _NL_TOMORROW_RE = re.compile(
     re.I,
 )
 _NL_MONTH_END_RE = re.compile(
-    r"at[eé]\s+o\s+fi(?:m|nal)\s+do\s+m[eê]s"
-    r"|fi(?:m|nal)\s+do\s+m[eê]s",
+    r"at[eé]\s+o\s+fi(?:m|nal)\s+do\s+m[eê]s" r"|fi(?:m|nal)\s+do\s+m[eê]s",
     re.I,
 )
 _NL_WEEKDAY_RE = re.compile(
@@ -87,19 +86,29 @@ _NL_WRITTEN_DATE_RE = re.compile(
 
 _WEEKDAY_MAP: dict[str, int] = {
     "segunda": 0,
-    "terca": 1, "terça": 1,
+    "terca": 1,
+    "terça": 1,
     "quarta": 2,
     "quinta": 3,
     "sexta": 4,
-    "sabado": 5, "sábado": 5,
+    "sabado": 5,
+    "sábado": 5,
     "domingo": 6,
 }
 _MONTH_MAP: dict[str, int] = {
-    "janeiro": 1, "fevereiro": 2,
-    "marco": 3, "março": 3,
-    "abril": 4, "maio": 5, "junho": 6, "julho": 7,
-    "agosto": 8, "setembro": 9, "outubro": 10,
-    "novembro": 11, "dezembro": 12,
+    "janeiro": 1,
+    "fevereiro": 2,
+    "marco": 3,
+    "março": 3,
+    "abril": 4,
+    "maio": 5,
+    "junho": 6,
+    "julho": 7,
+    "agosto": 8,
+    "setembro": 9,
+    "outubro": 10,
+    "novembro": 11,
+    "dezembro": 12,
 }
 
 PROGRAM_RULES: dict[str, dict[str, Any]] = {

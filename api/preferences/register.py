@@ -45,20 +45,28 @@ class handler(BaseHTTPRequestHandler):
             with _SessionFactory() as session:
                 row = session.query(UserPreferences).filter_by(email=email).first()
                 if row:
-                    _json_response(self, 200, {
-                        "user_id": str(row.user_id),
-                        "email": email,
-                        "name": row.name,
-                        "phone": row.phone,
-                        "is_new": False,
-                    })
+                    _json_response(
+                        self,
+                        200,
+                        {
+                            "user_id": str(row.user_id),
+                            "email": email,
+                            "name": row.name,
+                            "phone": row.phone,
+                            "is_new": False,
+                        },
+                    )
                     return
 
                 count = session.query(UserPreferences).count()
                 if count >= settings.max_users:
-                    _json_response(self, 400, {
-                        "detail": "Número máximo de cadastros atingido. Tente novamente mais tarde."
-                    })
+                    _json_response(
+                        self,
+                        400,
+                        {
+                            "detail": "Número máximo de cadastros atingido. Tente novamente mais tarde."
+                        },
+                    )
                     return
 
                 new_id = uuid.uuid4()
@@ -74,13 +82,17 @@ class handler(BaseHTTPRequestHandler):
                 )
                 session.add(row)
                 session.commit()
-                _json_response(self, 201, {
-                    "user_id": str(new_id),
-                    "email": email,
-                    "name": name,
-                    "phone": phone,
-                    "is_new": True,
-                })
+                _json_response(
+                    self,
+                    201,
+                    {
+                        "user_id": str(new_id),
+                        "email": email,
+                        "name": name,
+                        "phone": phone,
+                        "is_new": True,
+                    },
+                )
         except json.JSONDecodeError:
             _json_response(self, 400, {"detail": "JSON inválido"})
         except Exception as exc:

@@ -21,7 +21,13 @@ import httpx
 import sentry_sdk
 
 from src.config.settings import ACCUMULATION_PROGRAMS, VALID_TRANSFER_PAIRS, settings
-from src.db.models import AutomationLog, EmailLog, Promotion, create_engine_from_url, get_session_factory
+from src.db.models import (
+    AutomationLog,
+    EmailLog,
+    Promotion,
+    create_engine_from_url,
+    get_session_factory,
+)
 from src.pipeline.dedup import dedup_batch
 from src.pipeline.dispatcher import dispatch_day1
 from src.pipeline.extractor import extract
@@ -103,8 +109,7 @@ def _db_promo_matches_prefs(promo: Any, prefs: UserPreferencesData) -> bool:
         origin = (promo.origin_program or promo.source_program or "").lower()
         dest = (promo.destination_program or "").lower()
         return any(
-            p.source.lower() == origin and p.dest.lower() == dest
-            for p in prefs.transfer_pairs
+            p.source.lower() == origin and p.dest.lower() == dest for p in prefs.transfer_pairs
         )
     program = (promo.origin_program or promo.source_program or "").lower()
     return program in {p.lower() for p in prefs.accumulation_programs}
@@ -189,16 +194,18 @@ def main(tier: int) -> None:
 
         duration = round(time.monotonic() - started, 2)
         with SessionFactory() as session:
-            session.add(AutomationLog(
-                workflow=workflow,
-                tier=tier,
-                status="success",
-                signals_found=signals_found,
-                promos_new=promos_new,
-                emails_sent=emails_sent,
-                duration_seconds=duration,
-                gh_run_id=gh_run_id,
-            ))
+            session.add(
+                AutomationLog(
+                    workflow=workflow,
+                    tier=tier,
+                    status="success",
+                    signals_found=signals_found,
+                    promos_new=promos_new,
+                    emails_sent=emails_sent,
+                    duration_seconds=duration,
+                    gh_run_id=gh_run_id,
+                )
+            )
             session.commit()
         logger.info("Tier %d completo em %.1fs", tier, duration)
 
@@ -209,18 +216,20 @@ def main(tier: int) -> None:
         logger.error("Tier %d falhou: %s", tier, error_msg, exc_info=True)
         try:
             with SessionFactory() as session:
-                session.add(AutomationLog(
-                    workflow=workflow,
-                    tier=tier,
-                    status="error",
-                    signals_found=signals_found,
-                    promos_new=promos_new,
-                    emails_sent=emails_sent,
-                    duration_seconds=duration,
-                    error_message=error_msg[:2000],
-                    error_traceback=tb[:5000],
-                    gh_run_id=gh_run_id,
-                ))
+                session.add(
+                    AutomationLog(
+                        workflow=workflow,
+                        tier=tier,
+                        status="error",
+                        signals_found=signals_found,
+                        promos_new=promos_new,
+                        emails_sent=emails_sent,
+                        duration_seconds=duration,
+                        error_message=error_msg[:2000],
+                        error_traceback=tb[:5000],
+                        gh_run_id=gh_run_id,
+                    )
+                )
                 session.commit()
         except Exception:
             pass

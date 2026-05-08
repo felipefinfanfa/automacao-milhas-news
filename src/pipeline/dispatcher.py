@@ -33,6 +33,7 @@ _jinja_env = Environment(
 # Email log helpers (inlined from the deleted sequence.py)
 # ---------------------------------------------------------------------------
 
+
 def has_sent(session: Any, user_id: str, promo_id: str, day_number: int) -> bool:
     """Returns True if the email for day N was already sent for this (user, promo)."""
     return (
@@ -64,6 +65,7 @@ def record_sent(session: Any, user_id: str, promo_id: str, day_number: int) -> N
 # Template rendering
 # ---------------------------------------------------------------------------
 
+
 def _render_template(template_name: str, context: dict[str, Any]) -> str:
     now = datetime.now(UTC)
     context.setdefault("date_str", now.strftime("%A, %d de %B de %Y").lower())
@@ -76,6 +78,7 @@ def _render_template(template_name: str, context: dict[str, Any]) -> str:
 # ---------------------------------------------------------------------------
 # Transport layer
 # ---------------------------------------------------------------------------
+
 
 def _send_via_resend(to: str, subject: str, html: str) -> bool:
     if not settings.resend_api_key:
@@ -127,6 +130,7 @@ def send_email(to: str, subject: str, html: str) -> bool:
 # ---------------------------------------------------------------------------
 # Dispatch functions
 # ---------------------------------------------------------------------------
+
 
 def _build_email_urls(user_id: str, unsubscribe_token: str | None) -> tuple[str | None, str]:
     unsubscribe_url = (

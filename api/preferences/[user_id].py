@@ -100,6 +100,7 @@ class handler(BaseHTTPRequestHandler):
 
             if send_confirmation:
                 from src.pipeline.dispatcher import dispatch_confirmation
+
                 threading.Thread(
                     target=dispatch_confirmation,
                     kwargs={

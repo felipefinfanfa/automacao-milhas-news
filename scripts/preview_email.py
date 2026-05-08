@@ -1,6 +1,6 @@
 """Envia e-mail de preview com promoções fictícias para testar o design.
 
-    py -3 scripts/preview_email.py
+py -3 scripts/preview_email.py
 """
 
 from __future__ import annotations
