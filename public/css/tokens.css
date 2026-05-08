@@ -4,7 +4,13 @@
  * Fonte: Geist (Google Fonts CDN)
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&display=swap');
+@font-face {
+  font-family: 'Geist';
+  src: url('/assets/fonts/Geist-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 @import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&display=swap');
 
 /* ─────────────────────────────────────────────
@@ -30,10 +36,17 @@
   --bg-overlay:         rgba(1, 4, 10, 0.92);
 
   /* Bordas */
-  --border:             rgba(206, 212, 242, 0.09);
-  --border-subtle:      rgba(206, 212, 242, 0.06);
-  --border-active:      rgba(28, 96, 218, 0.35);
-  --border-focus:       #1C60DA;
+  --border:             rgba(206, 212, 242, 0.12);
+  --border-default:     rgba(206, 212, 242, 0.22);
+  --border-subtle:      rgba(206, 212, 242, 0.07);
+  --border-strong:      rgba(206, 212, 242, 0.45);
+  --border-active:      rgba(28, 96, 218, 0.45);
+  --border-focus:       rgba(28, 96, 218, 0.6);
+
+  /* Gradients */
+  --gradient-hero:      linear-gradient(180deg, #01040A 0%, #060C1A 100%);
+  --gradient-card:      linear-gradient(135deg, rgba(28,96,218,0.14) 0%, rgba(1,4,10,0.95) 100%);
+  --gradient-glow:      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(28,96,218,0.28) 0%, transparent 70%);
 
   /* Texto */
   --fg-1:               var(--color-navy-100);   /* headings */
