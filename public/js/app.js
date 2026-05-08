@@ -202,12 +202,24 @@ function renderPairs() {
     return;
   }
 
+  const ALL_PROG_LOOKUP = [...TRANSFER_SOURCES, ...TRANSFER_DESTS, ...ACCUM_PROGRAMS];
   transferPairs.forEach((pair, idx) => {
-    const srcName = ALL_PROGRAMS.find(p => p.id === pair.source)?.name ?? pair.source;
-    const dstName = ALL_PROGRAMS.find(p => p.id === pair.dest)?.name   ?? pair.dest;
+    const src = ALL_PROG_LOOKUP.find(p => p.id === pair.source);
+    const dst = ALL_PROG_LOOKUP.find(p => p.id === pair.dest);
     const tag = document.createElement('div');
     tag.className = 'pair-tag';
-    tag.innerHTML = `${srcName} → ${dstName}<button class="pair-tag-remove" onclick="removePair(${idx})" title="Remover">×</button>`;
+    tag.style.setProperty('--src-color', src?.color ?? 'var(--border)');
+    tag.style.setProperty('--dst-color', dst?.color ?? 'var(--border)');
+    tag.style.setProperty('--src-bg', src?.bg ?? 'var(--bg-elevated)');
+    tag.style.setProperty('--dst-bg', dst?.bg ?? 'var(--bg-elevated)');
+    tag.innerHTML = `
+      <span class="prog-dot" style="background:${src?.color ?? 'var(--border)'};box-shadow:0 0 5px ${src?.color ?? 'transparent'}"></span>
+      <span class="prog-name">${src?.name ?? pair.source}</span>
+      <span class="pair-tag-arrow">→</span>
+      <span class="prog-dot" style="background:${dst?.color ?? 'var(--border)'};box-shadow:0 0 5px ${dst?.color ?? 'transparent'}"></span>
+      <span class="prog-name">${dst?.name ?? pair.dest}</span>
+      <button class="pair-tag-remove" onclick="removePair(${idx})" title="Remover">×</button>
+    `;
     list.appendChild(tag);
   });
 }

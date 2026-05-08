@@ -1,7 +1,6 @@
 """GET + PUT /api/preferences/[user_id] — read and update user preferences."""
 
 import json
-import threading
 import uuid
 from http.server import BaseHTTPRequestHandler
 from typing import Any
@@ -114,18 +113,13 @@ class handler(BaseHTTPRequestHandler):
 
             if send_confirmation:
                 from src.pipeline.dispatcher import dispatch_confirmation
-
-                threading.Thread(
-                    target=dispatch_confirmation,
-                    kwargs={
-                        "user_id": uid,
-                        "user_email": email,
-                        "unsubscribe_token": token,
-                        "transfer_pairs": pair_objs,
-                        "accumulation_programs": acc_programs,
-                    },
-                    daemon=True,
-                ).start()
+                dispatch_confirmation(
+                    user_id=uid,
+                    user_email=email,
+                    unsubscribe_token=token,
+                    transfer_pairs=pair_objs,
+                    accumulation_programs=acc_programs,
+                )
 
             _json_response(self, 200, result)
         except json.JSONDecodeError:
