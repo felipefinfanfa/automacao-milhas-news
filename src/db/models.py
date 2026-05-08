@@ -134,6 +134,25 @@ class MonitorState(Base):
     )
 
 
+class AutomationLog(Base):
+    """Audit log for every GitHub Actions pipeline run."""
+
+    __tablename__ = "automation_logs"
+
+    id: Any = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    run_at: Any = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    workflow: Any = Column(Text, nullable=False)
+    tier: Any = Column(Integer, nullable=False)
+    status: Any = Column(Text, nullable=False)
+    signals_found: Any = Column(Integer, default=0)
+    promos_new: Any = Column(Integer, default=0)
+    emails_sent: Any = Column(Integer, default=0)
+    error_message: Any = Column(Text)
+    error_traceback: Any = Column(Text)
+    duration_seconds: Any = Column(Numeric(8, 2))
+    gh_run_id: Any = Column(Text)
+
+
 def get_session_factory(engine: Any) -> Any:
     from sqlalchemy.orm import sessionmaker
 
