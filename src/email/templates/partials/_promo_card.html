@@ -23,32 +23,42 @@
 {% endif %}
 
 <table width="100%" cellspacing="0" cellpadding="0" border="0"
-  style="background:#0B1122;border:1px solid #1A2550;border-left:3px solid {{ src_accent }};border-radius:12px;margin-bottom:10px">
+  style="background:#0B1122;border:1px solid rgba(206,212,242,0.10);border-left:3px solid {{ src_accent }};border-radius:12px;margin-bottom:10px;mso-border-alt:1px solid #1A2550;mso-border-left-alt:3px solid {{ src_accent }}">
   <tr>
     <td style="padding:16px 18px 14px">
 
       <!-- Título -->
-      <a href="{{ promo.source_url }}" style="font-size:14px;font-weight:600;color:#CED4F2;text-decoration:none;display:block;margin-bottom:12px;line-height:1.45;letter-spacing:-.2px">
+      <a href="{{ promo.source_url }}"
+         style="font-size:14px;font-weight:600;color:#CED4F2;text-decoration:none;display:block;margin-bottom:12px;line-height:1.45;letter-spacing:-0.2px">
         {{ promo.title or src_label }}
       </a>
 
-      <!-- Programs + bônus + datas -->
+      <!-- Pills + bônus + datas -->
       <table cellspacing="0" cellpadding="0" border="0" width="100%">
         <tr>
-          <!-- Pills -->
+          <!-- Program pills -->
           <td style="vertical-align:middle">
             {% if dst %}
             <table cellspacing="0" cellpadding="0" border="0">
               <tr>
-                <td style="background:#070C18;color:{{ src_accent }};border:1px solid #1A2550;border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;white-space:nowrap;letter-spacing:.2px">{{ src_label }}</td>
-                <td style="padding:0 7px;color:#455084;font-size:12px;font-weight:600">&#8594;</td>
-                <td style="background:#070C18;color:{{ dst_accent }};border:1px solid #1A2550;border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;white-space:nowrap;letter-spacing:.2px">{{ dst_label }}</td>
+                <td bgcolor="#070C18"
+                    style="background:#070C18;color:{{ src_accent }};border:1px solid rgba(206,212,242,0.10);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;white-space:nowrap;letter-spacing:0.2px;mso-border-alt:1px solid #1A2550">
+                  {{ src_label }}
+                </td>
+                <td style="padding:0 8px;color:#455084;font-size:13px;font-weight:600">&#8594;</td>
+                <td bgcolor="#070C18"
+                    style="background:#070C18;color:{{ dst_accent }};border:1px solid rgba(206,212,242,0.10);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;white-space:nowrap;letter-spacing:0.2px;mso-border-alt:1px solid #1A2550">
+                  {{ dst_label }}
+                </td>
               </tr>
             </table>
             {% else %}
             <table cellspacing="0" cellpadding="0" border="0">
               <tr>
-                <td style="background:#070C18;color:{{ src_accent }};border:1px solid #1A2550;border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;white-space:nowrap;letter-spacing:.2px">{{ src_label }}</td>
+                <td bgcolor="#070C18"
+                    style="background:#070C18;color:{{ src_accent }};border:1px solid rgba(206,212,242,0.10);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;white-space:nowrap;letter-spacing:0.2px;mso-border-alt:1px solid #1A2550">
+                  {{ src_label }}
+                </td>
               </tr>
             </table>
             {% endif %}
@@ -56,9 +66,9 @@
 
           <!-- Bônus -->
           {% if promo.bonus_percent %}
-          <td style="padding-left:14px;text-align:right;white-space:nowrap;vertical-align:middle;width:60px">
-            <span style="font-size:24px;font-weight:800;color:{{ bonus_color }};letter-spacing:-1px;line-height:1">{{ bonus_label }}</span>
-            <div style="font-size:10px;color:#455084;margin-top:2px;text-align:right;letter-spacing:.5px;text-transform:uppercase">bônus</div>
+          <td style="padding-left:14px;text-align:right;white-space:nowrap;vertical-align:middle;width:62px">
+            <p style="font-size:24px;font-weight:800;color:{{ bonus_color }};letter-spacing:-1px;line-height:1;margin:0">{{ bonus_label }}</p>
+            <p style="font-size:10px;color:#455084;margin:2px 0 0;text-align:right;letter-spacing:0.5px;text-transform:uppercase">b&#244;nus</p>
           </td>
           {% endif %}
 
@@ -66,11 +76,11 @@
           {% if promo.ends_at %}
           <td style="padding-left:14px;text-align:right;white-space:nowrap;vertical-align:middle">
             {% if promo.starts_at %}
-            <div style="font-size:10px;color:#455084;letter-spacing:.3px;text-transform:uppercase;margin-bottom:2px">{{ promo.starts_at.strftime('%d %b') }} &rarr;</div>
-            <div style="font-size:13px;font-weight:700;color:#A5ACCD;letter-spacing:-.2px">{{ promo.ends_at.strftime('%d %b') }}</div>
+            <p style="font-size:10px;color:#455084;letter-spacing:0.3px;text-transform:uppercase;margin:0 0 2px">{{ promo.starts_at.strftime('%d %b') }} &#8594;</p>
+            <p style="font-size:13px;font-weight:700;color:#A5ACCD;letter-spacing:-0.2px;margin:0">{{ promo.ends_at.strftime('%d %b') }}</p>
             {% else %}
-            <div style="font-size:10px;color:#455084;letter-spacing:.3px;text-transform:uppercase;margin-bottom:2px">válido até</div>
-            <div style="font-size:13px;font-weight:700;color:#A5ACCD;letter-spacing:-.2px">{{ promo.ends_at.strftime('%d %b') }}</div>
+            <p style="font-size:10px;color:#455084;letter-spacing:0.3px;text-transform:uppercase;margin:0 0 2px">v&#225;lido at&#233;</p>
+            <p style="font-size:13px;font-weight:700;color:#A5ACCD;letter-spacing:-0.2px;margin:0">{{ promo.ends_at.strftime('%d %b') }}</p>
             {% endif %}
           </td>
           {% endif %}
@@ -80,20 +90,25 @@
 
       {% if promo.conditions %}
       <div style="margin-top:10px">
-        <span style="font-size:11px;color:#707AA9;background:#070C18;border-radius:6px;padding:4px 10px;display:inline-block;border:1px solid #1A2550;letter-spacing:.2px">
+        <span bgcolor="#070C18"
+              style="display:inline-block;background:#070C18;color:#707AA9;border:1px solid rgba(206,212,242,0.10);border-radius:6px;padding:4px 10px;font-size:11px;letter-spacing:0.2px;mso-border-alt:1px solid #1A2550">
           {{ promo.conditions }}
         </span>
       </div>
       {% endif %}
 
       <!-- CTA -->
-      <div style="margin-top:14px">
-        <a href="{{ promo.source_url }}"
-          style="display:inline-block;background:#1C60DA;color:#ffffff;font-size:11px;font-weight:700;
-                 text-decoration:none;padding:8px 16px;border-radius:8px;letter-spacing:.4px">
-          Ver promoção &rarr;
-        </a>
-      </div>
+      <table cellspacing="0" cellpadding="0" border="0" style="margin-top:14px">
+        <tr>
+          <td bgcolor="#1C60DA"
+              style="background:#1C60DA;border-radius:8px;mso-padding-alt:8px 16px">
+            <a href="{{ promo.source_url }}"
+               style="display:inline-block;background:#1C60DA;color:#ffffff;font-size:12px;font-weight:700;text-decoration:none;padding:8px 16px;border-radius:8px;letter-spacing:0.3px">
+              Ver promo&#231;&#227;o &#8594;
+            </a>
+          </td>
+        </tr>
+      </table>
 
     </td>
   </tr>

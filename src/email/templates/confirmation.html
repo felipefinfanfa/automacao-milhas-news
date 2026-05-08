@@ -2,52 +2,50 @@
 
 {% block body %}
 
-<!-- ── Success block ── -->
-<table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:28px">
+{# ── Success block ── #}
+<table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:26px">
   <tr>
-    <td style="background:#0D1A3A;border:1px solid #1C60DA;border-radius:14px;padding:22px 24px 20px">
-      <table cellspacing="0" cellpadding="0" border="0" style="margin-bottom:14px">
+    <td bgcolor="#0D1A3A"
+        style="background:#0D1A3A;border:1px solid rgba(28,96,218,0.35);border-radius:12px;padding:20px 22px;mso-border-alt:1px solid #1C60DA">
+      <table cellspacing="0" cellpadding="0" border="0" style="margin-bottom:14px;width:100%">
         <tr>
-          <td style="width:42px;height:42px;background:#102048;border:1px solid #1C60DA;border-radius:11px;text-align:center;vertical-align:middle">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7EB0FF" stroke-width="2.5" style="display:block;margin:0 auto">
-              <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
-              <polyline points="22 4 12 14.01 9 11.01"/>
-            </svg>
+          <td width="40" height="40" bgcolor="#102048"
+              style="background:#102048;border:1px solid rgba(28,96,218,0.5);border-radius:10px;text-align:center;vertical-align:middle;font-size:18px;mso-border-alt:1px solid #1C60DA">
+            &#10003;
           </td>
           <td style="padding-left:14px;vertical-align:middle">
-            <div style="font-size:16px;font-weight:700;color:#CED4F2;letter-spacing:-.3px">Prefer&ecirc;ncias salvas com sucesso</div>
-            <div style="font-size:12px;color:#455084;margin-top:3px;letter-spacing:.2px">Radar de Milhas est&aacute; monitorando para voc&ecirc;</div>
+            <p style="font-size:16px;font-weight:700;color:#CED4F2;letter-spacing:-0.3px;margin:0 0 3px">Prefer&#234;ncias salvas com sucesso</p>
+            <p style="font-size:12px;color:#455084;margin:0;letter-spacing:0.2px">Radar de Milhas est&#225; monitorando para voc&#234;</p>
           </td>
         </tr>
       </table>
       <p style="font-size:14px;color:#A5ACCD;margin:0;line-height:1.75">
-        Assim que detectarmos uma promo&ccedil;&atilde;o que corresponda ao seu perfil, voc&ecirc; receber&aacute;
+        Assim que detectarmos uma promo&#231;&#227;o que corresponda ao seu perfil, voc&#234; receber&#225;
         um alerta por e-mail imediatamente.
       </p>
     </td>
   </tr>
 </table>
 
-<!-- ── O que monitoramos ── -->
-<table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:28px">
+{# ── O que monitoramos ── #}
+<table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:24px">
   <tr>
     <td style="padding-bottom:16px">
-      <div style="font-size:16px;font-weight:700;color:#CED4F2;letter-spacing:-.3px">O que monitoramos para voc&ecirc;</div>
+      <p style="font-size:15px;font-weight:700;color:#CED4F2;letter-spacing:-0.3px;margin:0">O que monitoramos para voc&#234;</p>
     </td>
   </tr>
 
   {% set program_labels = {'smiles': 'Smiles', 'latam': 'LATAM Pass', 'azul': 'Azul', 'livelo': 'Livelo', 'esfera': 'Esfera', 'iupp': 'Iupp'} %}
-  {% set program_accent = {'smiles': '#f97316', 'latam': '#0ea5e9', 'azul': '#2563eb', 'livelo': '#7c3aed', 'esfera': '#dc2626'} %}
+  {% set program_accent = {'smiles': '#f97316', 'latam': '#0ea5e9', 'azul': '#2563eb', 'livelo': '#7c3aed', 'esfera': '#dc2626', 'iupp': '#d97706'} %}
 
   {% if transfer_pairs %}
   <tr>
     <td style="padding-bottom:14px">
-      <div style="font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:#455084;margin-bottom:10px">
-        B&ocirc;nus de transfer&ecirc;ncia
-      </div>
+      <p style="font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:#455084;margin:0 0 10px">
+        B&#244;nus de transfer&#234;ncia
+      </p>
       {% for pair in transfer_pairs %}
-      <span style="display:inline-block;background:#0B1122;border:1px solid #1A2550;border-radius:20px;
-                   padding:5px 13px;font-size:12px;font-weight:600;color:#A5ACCD;margin:3px 5px 3px 0;letter-spacing:-.1px">
+      <span style="display:inline-block;background:#0B1122;border:1px solid rgba(206,212,242,0.12);border-radius:20px;padding:5px 13px;font-size:12px;font-weight:600;margin:3px 5px 3px 0;letter-spacing:-0.1px;mso-border-alt:1px solid #1A2550">
         <span style="color:{{ program_accent.get(pair.source, '#A5ACCD') }}">{{ program_labels.get(pair.source, pair.source) }}</span>
         <span style="color:#455084"> &#8594; </span>
         <span style="color:{{ program_accent.get(pair.dest, '#A5ACCD') }}">{{ program_labels.get(pair.dest, pair.dest) }}</span>
@@ -59,14 +57,12 @@
 
   {% if accumulation_programs %}
   <tr>
-    <td style="padding-bottom:4px">
-      <div style="font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:#455084;margin-bottom:10px">
-        Ac&uacute;mulo de pontos
-      </div>
+    <td style="padding-bottom:6px">
+      <p style="font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:#455084;margin:0 0 10px">
+        Ac&#250;mulo de pontos
+      </p>
       {% for prog in accumulation_programs %}
-      <span style="display:inline-block;background:#0B1122;border:1px solid #1A2550;border-radius:20px;
-                   padding:5px 13px;font-size:12px;font-weight:600;margin:3px 5px 3px 0;letter-spacing:-.1px;
-                   color:{{ program_accent.get(prog, '#A5ACCD') }}">
+      <span style="display:inline-block;background:#0B1122;border:1px solid rgba(206,212,242,0.12);border-radius:20px;padding:5px 13px;font-size:12px;font-weight:600;margin:3px 5px 3px 0;color:{{ program_accent.get(prog, '#A5ACCD') }};letter-spacing:-0.1px;mso-border-alt:1px solid #1A2550">
         {{ program_labels.get(prog, prog) }}
       </span>
       {% endfor %}
@@ -76,20 +72,22 @@
 
   {% if not transfer_pairs and not accumulation_programs %}
   <tr>
-    <td style="background:#0B1122;border:1px solid #1A2550;border-radius:12px;padding:16px;text-align:center;color:#455084;font-size:13px">
-      Nenhuma prefer&ecirc;ncia configurada ainda.
+    <td bgcolor="#0B1122"
+        style="background:#0B1122;border:1px solid rgba(206,212,242,0.10);border-radius:12px;padding:16px;text-align:center;color:#455084;font-size:13px;mso-border-alt:1px solid #1A2550">
+      Nenhuma prefer&#234;ncia configurada ainda.
     </td>
   </tr>
   {% endif %}
 </table>
 
-<!-- ── Info de frequência ── -->
+{# ── Frequência ── #}
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr>
-    <td style="background:#0B1122;border:1px solid #1A2550;border-radius:12px;padding:16px 20px">
-      <p style="font-size:13px;color:#707AA9;margin:0;line-height:1.7">
-        Os scans rodam <strong style="color:#CED4F2">6&times; por dia</strong> (06h, 09h, 12h, 15h, 18h e 21h).
-        Voc&ecirc; recebe alerta em at&eacute; <strong style="color:#CED4F2">1&nbsp;hora</strong> ap&oacute;s qualquer lan&ccedil;amento de promo&ccedil;&atilde;o.
+    <td bgcolor="#0B1122"
+        style="background:#0B1122;border:1px solid rgba(206,212,242,0.10);border-radius:12px;padding:16px 18px;mso-border-alt:1px solid #1A2550">
+      <p style="font-size:13px;color:#707AA9;margin:0;line-height:1.75">
+        Os scans rodam <strong style="color:#CED4F2">6&#215; por dia</strong> (06h, 09h, 12h, 15h, 18h e 21h).
+        Voc&#234; recebe alerta em at&#233; <strong style="color:#CED4F2">1&nbsp;hora</strong> ap&#243;s qualquer lan&#231;amento de promo&#231;&#227;o.
       </p>
     </td>
   </tr>

@@ -1,153 +1,175 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" xmlns:v="urn:schemas-microsoft-com:vml">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="dark">
-  <title>Radar de Milhas — {{ email_title }}</title>
+  <meta name="supported-color-schemes" content="dark">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>{{ email_title }}</title>
+  <style>
+    /* Lock dark mode — prevent email clients from inverting colors */
+    :root { color-scheme: dark; }
+    body { background-color: #01040A !important; }
+
+    /* Light mode override — force dark even when client is in light mode */
+    @media (prefers-color-scheme: light) {
+      body, .email-body      { background-color: #01040A !important; }
+      .email-card            { background-color: #070C18 !important; }
+      .email-footer-bg       { background-color: #070C18 !important; }
+      .promo-card-bg         { background-color: #0B1122 !important; }
+      .promo-pill-bg         { background-color: #070C18 !important; }
+      .info-block-bg         { background-color: #0B1122 !important; }
+      .text-primary          { color: #CED4F2 !important; }
+      .text-secondary        { color: #A5ACCD !important; }
+      .text-muted            { color: #707AA9 !important; }
+      .text-faint            { color: #455084 !important; }
+      .text-blue             { color: #1C60DA !important; }
+      .text-link             { color: #7EB0FF !important; }
+    }
+  </style>
 </head>
-<!--
-  Fin Fanfa Design System — dark premium email
-  #01040A base · #070C18 card · #1C60DA electric blue · #CED4F2 text
-  Logo via hosted PNG: milhas.felipefinfanfa.com.br/assets/images/
--->
-<body style="margin:0;padding:0;background:#01040A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;color:#CED4F2;-webkit-font-smoothing:antialiased">
+<body class="email-body" style="margin:0;padding:0;background:#01040A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;mso-line-height-rule:exactly">
 
-  <table width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#01040A" style="background:#01040A">
-    <tr>
-      <td align="center" style="padding:36px 12px 52px">
+<table width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#01040A" style="background:#01040A;min-width:320px">
+  <tr>
+    <td align="center" style="padding:32px 16px 48px">
 
-        <table width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:580px">
+      <!-- Outer wrapper — max 560px -->
+      <table width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:560px;width:100%">
 
-          <!-- ── Wordmark header ── -->
-          <tr>
-            <td style="padding:0 0 20px">
-              <table width="100%" cellspacing="0" cellpadding="0" border="0">
-                <tr>
-                  <td style="vertical-align:middle">
-                    <img src="https://milhas.felipefinfanfa.com.br/assets/images/logo-wordmark.png"
-                         alt="Radar de Milhas" width="110" height="33"
-                         style="display:block;border:0;height:auto;max-width:110px">
-                  </td>
-                  <td style="text-align:right;vertical-align:middle">
-                    <span style="font-size:10px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:#455084">
-                      milhas.felipefinfanfa.com.br
-                    </span>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+        <!-- ══ Top brand bar ══ -->
+        <tr>
+          <td style="padding:0 0 20px">
+            <table width="100%" cellspacing="0" cellpadding="0" border="0">
+              <tr>
+                <td style="vertical-align:middle">
+                  <!-- Wordmark PNG — hosted, works in all email clients -->
+                  <img src="https://milhas.felipefinfanfa.com.br/assets/images/logo-wordmark.png"
+                       alt="Radar de Milhas" width="108" height="32"
+                       style="display:block;border:0;height:auto;max-width:108px;font-size:0">
+                </td>
+                <td style="text-align:right;vertical-align:middle">
+                  <span class="text-faint" style="font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#455084">
+                    milhas.felipefinfanfa.com.br
+                  </span>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
 
-          <!-- ── Barra de acento superior ── -->
-          <tr>
-            <td height="3" bgcolor="#1C60DA" style="background:#1C60DA;border-radius:12px 12px 0 0;line-height:3px;font-size:3px">&#8203;</td>
-          </tr>
+        <!-- ══ Blue accent line ══ -->
+        <tr>
+          <td height="2" bgcolor="#1C60DA" style="background:#1C60DA;border-radius:8px 8px 0 0;font-size:0;line-height:0">&#8203;</td>
+        </tr>
 
-          <!-- ── Card principal ── -->
-          <tr>
-            <td bgcolor="#070C18" style="background:#070C18;border:1px solid #1A2550;border-top:none;border-radius:0 0 16px 16px">
+        <!-- ══ Main card ══ -->
+        <tr>
+          <td class="email-card" bgcolor="#070C18"
+              style="background:#070C18;border:1px solid rgba(206,212,242,0.12);border-top:none;border-radius:0 0 14px 14px;mso-border-alt:1px solid #1A2550">
 
-              <!-- Header do card -->
-              <table width="100%" cellspacing="0" cellpadding="0" border="0">
-                <tr>
-                  <td style="padding:28px 32px 22px;border-bottom:1px solid #111B35">
-                    <table width="100%" cellspacing="0" cellpadding="0" border="0">
-                      <tr>
-                        <td style="vertical-align:middle">
-                          <div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1C60DA;margin-bottom:10px">
-                            Radar de Milhas
-                          </div>
-                          <div style="font-size:26px;font-weight:700;color:#CED4F2;letter-spacing:-.6px;line-height:1.15">
-                            {{ header_title | safe }}
-                          </div>
-                          <div style="font-size:12px;color:#455084;margin-top:8px;text-transform:capitalize;letter-spacing:.3px">
-                            {{ date_str }}
-                          </div>
-                        </td>
-                        <td style="text-align:right;vertical-align:top;padding-left:20px;width:48px">
-                          <img src="https://milhas.felipefinfanfa.com.br/assets/images/logo-monogram.png"
-                               alt="F" width="44" height="44"
-                               style="display:block;border:0;border-radius:10px;width:44px;height:44px">
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
+            <!-- Card header -->
+            <table width="100%" cellspacing="0" cellpadding="0" border="0">
+              <tr>
+                <td style="padding:26px 28px 22px;border-bottom:1px solid rgba(206,212,242,0.08);mso-border-bottom-alt:1px solid #111B35">
+                  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                    <tr>
+                      <td style="vertical-align:middle">
+                        <p class="text-blue" style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1C60DA;margin:0 0 10px">Radar&nbsp;de&nbsp;Milhas</p>
+                        <p class="text-primary" style="font-size:24px;font-weight:700;color:#CED4F2;letter-spacing:-0.5px;line-height:1.2;margin:0">{{ header_title | safe }}</p>
+                        <p class="text-faint" style="font-size:12px;color:#455084;margin:8px 0 0;text-transform:capitalize;letter-spacing:0.2px">{{ date_str }}</p>
+                      </td>
+                      <td style="text-align:right;vertical-align:top;padding-left:16px;width:44px">
+                        <!-- F monogram -->
+                        <table cellspacing="0" cellpadding="0" border="0">
+                          <tr>
+                            <td width="40" height="40" bgcolor="#0D1630"
+                                style="background:#0D1630;border:1px solid #1C60DA;border-radius:10px;text-align:center;vertical-align:middle;mso-border-alt:1px solid #1C60DA">
+                              <img src="https://milhas.felipefinfanfa.com.br/assets/images/logo-monogram.png"
+                                   width="40" height="40" alt="F"
+                                   style="display:block;border:0;border-radius:9px;width:40px;height:40px">
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
 
-              <!-- Body -->
-              <table width="100%" cellspacing="0" cellpadding="0" border="0">
-                <tr>
-                  <td bgcolor="#070C18" style="padding:28px 32px 12px;background:#070C18">
-                    {% block body %}{% endblock %}
-                  </td>
-                </tr>
-              </table>
+            <!-- Card body -->
+            <table width="100%" cellspacing="0" cellpadding="0" border="0">
+              <tr>
+                <td class="email-card" bgcolor="#070C18" style="padding:24px 28px 12px;background:#070C18">
+                  {% block body %}{% endblock %}
+                </td>
+              </tr>
+            </table>
 
-              <!-- Divisor -->
-              <table width="100%" cellspacing="0" cellpadding="0" border="0">
-                <tr>
-                  <td style="padding:0 32px">
-                    <div style="height:1px;background:#111B35;font-size:0;line-height:0">&#8203;</div>
-                  </td>
-                </tr>
-              </table>
+            <!-- Divider -->
+            <table width="100%" cellspacing="0" cellpadding="0" border="0">
+              <tr>
+                <td style="padding:0 28px">
+                  <div style="height:1px;background:rgba(206,212,242,0.07);font-size:0;line-height:0;mso-background:#111B35">&#8203;</div>
+                </td>
+              </tr>
+            </table>
 
-              <!-- Footer -->
-              <table width="100%" cellspacing="0" cellpadding="0" border="0">
-                <tr>
-                  <td style="padding:20px 32px 28px;border-radius:0 0 16px 16px">
+            <!-- Card footer -->
+            <table width="100%" cellspacing="0" cellpadding="0" border="0">
+              <tr>
+                <td class="email-footer-bg" style="padding:20px 28px 26px;background:#070C18;border-radius:0 0 14px 14px">
 
-                    {% if manage_url %}
-                    <table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:18px">
-                      <tr>
-                        <td>
-                          <a href="{{ manage_url }}"
-                             style="display:inline-block;background:#111B35;color:#7EB0FF;font-size:12px;font-weight:600;text-decoration:none;padding:9px 18px;border-radius:8px;border:1px solid #1C60DA;letter-spacing:.2px">
-                            Gerenciar prefer&ecirc;ncias
+                  {% if manage_url %}
+                  <table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:16px">
+                    <tr>
+                      <td>
+                        <a href="{{ manage_url }}"
+                           style="display:inline-block;background:#0F1A36;color:#7EB0FF;font-size:12px;font-weight:600;text-decoration:none;padding:9px 18px;border-radius:8px;border:1px solid rgba(28,96,218,0.4);letter-spacing:0.2px;mso-border-alt:1px solid #1C60DA">
+                          Gerenciar prefer&ecirc;ncias
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+                  {% endif %}
+
+                  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                    <tr>
+                      <td style="vertical-align:middle">
+                        <span class="text-faint" style="font-size:11px;color:#455084;line-height:1.7">
+                          Gerado automaticamente pelo <strong style="color:#707AA9">Radar&nbsp;de&nbsp;Milhas</strong>.
+                          Dados baseados em informa&ccedil;&otilde;es p&uacute;blicas &mdash;
+                          confira nas fontes originais antes de transferir pontos.
+                          {% if unsubscribe_url %}
+                          &nbsp;&middot;&nbsp;
+                          <a href="{{ unsubscribe_url }}" style="color:#455084;text-decoration:underline;font-size:11px">
+                            Cancelar inscri&ccedil;&atilde;o
                           </a>
-                        </td>
-                      </tr>
-                    </table>
-                    {% endif %}
+                          {% endif %}
+                        </span>
+                      </td>
+                      <td style="text-align:right;vertical-align:middle;padding-left:16px;white-space:nowrap;width:72px">
+                        <img src="https://milhas.felipefinfanfa.com.br/assets/images/logo-wordmark.png"
+                             alt="Fin Fanfa" width="64" height="19"
+                             style="display:block;border:0;opacity:0.3;width:64px;height:auto;filter:opacity(0.3)">
+                      </td>
+                    </tr>
+                  </table>
 
-                    <table width="100%" cellspacing="0" cellpadding="0" border="0">
-                      <tr>
-                        <td style="vertical-align:middle">
-                          <span style="font-size:11px;color:#455084;line-height:1.7">
-                            Gerado automaticamente pelo <strong style="color:#707AA9">Radar de Milhas</strong>.
-                            Dados baseados em informa&ccedil;&otilde;es p&uacute;blicas &mdash;
-                            confira nas fontes originais antes de transferir pontos.
-                            {% if unsubscribe_url %}
-                            &nbsp;&middot;&nbsp;
-                            <a href="{{ unsubscribe_url }}"
-                               style="color:#455084;text-decoration:underline;font-size:11px">
-                              Cancelar inscri&ccedil;&atilde;o
-                            </a>
-                            {% endif %}
-                          </span>
-                        </td>
-                        <td style="text-align:right;vertical-align:middle;padding-left:20px;white-space:nowrap">
-                          <img src="https://milhas.felipefinfanfa.com.br/assets/images/logo-wordmark.png"
-                               alt="Fin Fanfa" width="64" height="19"
-                               style="display:block;border:0;opacity:.35;height:auto;max-width:64px">
-                        </td>
-                      </tr>
-                    </table>
+                </td>
+              </tr>
+            </table>
 
-                  </td>
-                </tr>
-              </table>
+          </td>
+        </tr>
 
-            </td>
-          </tr>
+      </table><!-- /outer wrapper -->
 
-        </table>
-
-      </td>
-    </tr>
-  </table>
+    </td>
+  </tr>
+</table>
 
 </body>
 </html>
