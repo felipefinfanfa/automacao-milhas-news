@@ -3,8 +3,8 @@
   'livelo': 'Livelo', 'esfera': 'Esfera', 'iupp': 'Iupp'
 } %}
 {% set program_accent = {
-  'smiles': '#f97316', 'latam': '#dc2626', 'azul': '#2563eb',
-  'livelo': '#7c3aed', 'esfera': '#0891b2', 'iupp': '#d97706'
+  'smiles': '#f97316', 'latam': '#0ea5e9', 'azul': '#2563eb',
+  'livelo': '#7c3aed', 'esfera': '#dc2626', 'iupp': '#d97706'
 } %}
 {% set src = promo.origin_program or promo.source_program %}
 {% set dst = promo.destination_program %}
@@ -18,73 +18,83 @@
   {% elif promo.bonus_percent >= 50 %}{% set bonus_color = '#F59E0B' %}
   {% else %}{% set bonus_color = '#7EB0FF' %}{% endif %}
 {% else %}
-  {% set bonus_label = '–' %}
+  {% set bonus_label = '' %}
   {% set bonus_color = '#455084' %}
 {% endif %}
 
 <table width="100%" cellspacing="0" cellpadding="0" border="0"
-  style="background:#0B1122;border:1px solid #0E163B;border-left:3px solid {{ src_accent }};border-radius:10px;margin-bottom:8px">
+  style="background:#0B1122;border:1px solid #1A2550;border-left:3px solid {{ src_accent }};border-radius:12px;margin-bottom:10px">
   <tr>
-    <td>
-      <table width="100%" cellspacing="0" cellpadding="0" border="0">
+    <td style="padding:16px 18px 14px">
+
+      <!-- Título -->
+      <a href="{{ promo.source_url }}" style="font-size:14px;font-weight:600;color:#CED4F2;text-decoration:none;display:block;margin-bottom:12px;line-height:1.45;letter-spacing:-.2px">
+        {{ promo.title or src_label }}
+      </a>
+
+      <!-- Programs + bônus + datas -->
+      <table cellspacing="0" cellpadding="0" border="0" width="100%">
         <tr>
-          <td style="padding:16px 18px 12px">
-            <a href="{{ promo.source_url }}" style="font-size:14px;font-weight:600;color:#CED4F2;text-decoration:none;display:block;margin-bottom:10px;line-height:1.4">
-              {{ promo.title or src_label }}
-            </a>
-            <table cellspacing="0" cellpadding="0" border="0" width="100%">
+          <!-- Pills -->
+          <td style="vertical-align:middle">
+            {% if dst %}
+            <table cellspacing="0" cellpadding="0" border="0">
               <tr>
-                <td style="vertical-align:middle">
-                  {% if dst %}
-                  <table cellspacing="0" cellpadding="0" border="0">
-                    <tr>
-                      <td style="background:#070C18;color:{{ src_accent }};border:1px solid #0E163B;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;white-space:nowrap">{{ src_label }}</td>
-                      <td style="padding:0 6px;color:#455084;font-size:12px;font-weight:700">&#8594;</td>
-                      <td style="background:#070C18;color:{{ dst_accent }};border:1px solid #0E163B;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;white-space:nowrap">{{ dst_label }}</td>
-                    </tr>
-                  </table>
-                  {% else %}
-                  <span style="background:#070C18;color:{{ src_accent }};border:1px solid #0E163B;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700">{{ src_label }}</span>
-                  {% endif %}
-                </td>
-                <td style="padding-left:12px;text-align:right;white-space:nowrap;vertical-align:middle">
-                  <span style="font-size:22px;font-weight:800;color:{{ bonus_color }}">{{ bonus_label }}</span>
-                  {% if promo.bonus_percent %}
-                  <span style="font-size:10px;color:#455084;display:block;margin-top:-2px;text-align:right">de bônus</span>
-                  {% endif %}
-                </td>
-                {% if promo.ends_at %}
-                <td style="padding-left:12px;text-align:right;white-space:nowrap;vertical-align:middle">
-                  {% if promo.starts_at %}
-                  <span style="font-size:10px;color:#455084">de {{ promo.starts_at.strftime('%d %b') }}</span><br>
-                  <span style="font-size:12px;font-weight:600;color:#A5ACCD">até {{ promo.ends_at.strftime('%d %b') }}</span>
-                  {% else %}
-                  <span style="font-size:10px;color:#455084">válido até</span><br>
-                  <span style="font-size:12px;font-weight:600;color:#A5ACCD">{{ promo.ends_at.strftime('%d %b %Y') }}</span>
-                  {% endif %}
-                </td>
-                {% endif %}
+                <td style="background:#070C18;color:{{ src_accent }};border:1px solid #1A2550;border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;white-space:nowrap;letter-spacing:.2px">{{ src_label }}</td>
+                <td style="padding:0 7px;color:#455084;font-size:12px;font-weight:600">&#8594;</td>
+                <td style="background:#070C18;color:{{ dst_accent }};border:1px solid #1A2550;border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;white-space:nowrap;letter-spacing:.2px">{{ dst_label }}</td>
               </tr>
             </table>
+            {% else %}
+            <table cellspacing="0" cellpadding="0" border="0">
+              <tr>
+                <td style="background:#070C18;color:{{ src_accent }};border:1px solid #1A2550;border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;white-space:nowrap;letter-spacing:.2px">{{ src_label }}</td>
+              </tr>
+            </table>
+            {% endif %}
           </td>
-        </tr>
-        {% if promo.conditions %}
-        <tr>
-          <td style="padding:0 18px 10px">
-            <span style="font-size:11px;color:#707AA9;background:#070C18;border-radius:6px;padding:4px 10px;display:inline-block;border:1px solid #0E163B">{{ promo.conditions }}</span>
+
+          <!-- Bônus -->
+          {% if promo.bonus_percent %}
+          <td style="padding-left:14px;text-align:right;white-space:nowrap;vertical-align:middle;width:60px">
+            <span style="font-size:24px;font-weight:800;color:{{ bonus_color }};letter-spacing:-1px;line-height:1">{{ bonus_label }}</span>
+            <div style="font-size:10px;color:#455084;margin-top:2px;text-align:right;letter-spacing:.5px;text-transform:uppercase">bônus</div>
           </td>
-        </tr>
-        {% endif %}
-        <tr>
-          <td style="padding:0 18px 16px">
-            <a href="{{ promo.source_url }}"
-              style="display:inline-block;background:#1C60DA;color:#ffffff;font-size:11px;font-weight:700;
-                     text-decoration:none;padding:8px 16px;border-radius:8px;letter-spacing:.3px">
-              Ver promoção &#8594;
-            </a>
+          {% endif %}
+
+          <!-- Datas -->
+          {% if promo.ends_at %}
+          <td style="padding-left:14px;text-align:right;white-space:nowrap;vertical-align:middle">
+            {% if promo.starts_at %}
+            <div style="font-size:10px;color:#455084;letter-spacing:.3px;text-transform:uppercase;margin-bottom:2px">{{ promo.starts_at.strftime('%d %b') }} &rarr;</div>
+            <div style="font-size:13px;font-weight:700;color:#A5ACCD;letter-spacing:-.2px">{{ promo.ends_at.strftime('%d %b') }}</div>
+            {% else %}
+            <div style="font-size:10px;color:#455084;letter-spacing:.3px;text-transform:uppercase;margin-bottom:2px">válido até</div>
+            <div style="font-size:13px;font-weight:700;color:#A5ACCD;letter-spacing:-.2px">{{ promo.ends_at.strftime('%d %b') }}</div>
+            {% endif %}
           </td>
+          {% endif %}
+
         </tr>
       </table>
+
+      {% if promo.conditions %}
+      <div style="margin-top:10px">
+        <span style="font-size:11px;color:#707AA9;background:#070C18;border-radius:6px;padding:4px 10px;display:inline-block;border:1px solid #1A2550;letter-spacing:.2px">
+          {{ promo.conditions }}
+        </span>
+      </div>
+      {% endif %}
+
+      <!-- CTA -->
+      <div style="margin-top:14px">
+        <a href="{{ promo.source_url }}"
+          style="display:inline-block;background:#1C60DA;color:#ffffff;font-size:11px;font-weight:700;
+                 text-decoration:none;padding:8px 16px;border-radius:8px;letter-spacing:.4px">
+          Ver promoção &rarr;
+        </a>
+      </div>
+
     </td>
   </tr>
 </table>

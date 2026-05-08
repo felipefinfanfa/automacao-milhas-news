@@ -6,15 +6,17 @@
 {% set accum_promos    = accum_promos    if accum_promos    is defined else [] %}
 
 {% if transfer_promos %}
-<table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:20px">
+<table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:24px">
   <tr>
-    <td style="padding-bottom:12px">
+    <td style="padding-bottom:14px">
       <table cellspacing="0" cellpadding="0" border="0">
         <tr>
-          <td style="width:28px;height:28px;background:#0B1122;border:1px solid #1C60DA;border-radius:7px;text-align:center;vertical-align:middle;font-size:13px;color:#7EB0FF">⇄</td>
-          <td style="padding-left:10px;vertical-align:middle">
-            <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#1C60DA">Transferências</div>
-            <div style="font-size:12px;color:#455084;margin-top:2px">{{ transfer_promos|length }} promoção{{ 'ões' if transfer_promos|length > 1 else '' }} detectada{{ 's' if transfer_promos|length > 1 else '' }}</div>
+          <td style="width:32px;height:32px;background:#102048;border:1px solid #1C60DA;border-radius:9px;text-align:center;vertical-align:middle">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7EB0FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          </td>
+          <td style="padding-left:12px;vertical-align:middle">
+            <div style="font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:#1C60DA">Transfer&ecirc;ncias</div>
+            <div style="font-size:12px;color:#455084;margin-top:2px;letter-spacing:.2px">{{ transfer_promos|length }} promo&ccedil;&atilde;o{{ '&otilde;es' if transfer_promos|length > 1 else '' }} detectada{{ 's' if transfer_promos|length > 1 else '' }}</div>
           </td>
         </tr>
       </table>
@@ -31,15 +33,17 @@
 {% endif %}
 
 {% if accum_promos %}
-<table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:20px">
+<table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:24px">
   <tr>
-    <td style="padding-bottom:12px">
+    <td style="padding-bottom:14px">
       <table cellspacing="0" cellpadding="0" border="0">
         <tr>
-          <td style="width:28px;height:28px;background:#0B1122;border:1px solid #455084;border-radius:7px;text-align:center;vertical-align:middle;font-size:13px;color:#A5ACCD">★</td>
-          <td style="padding-left:10px;vertical-align:middle">
-            <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#707AA9">Acúmulo</div>
-            <div style="font-size:12px;color:#455084;margin-top:2px">{{ accum_promos|length }} promoção{{ 'ões' if accum_promos|length > 1 else '' }} detectada{{ 's' if accum_promos|length > 1 else '' }}</div>
+          <td style="width:32px;height:32px;background:#0B1122;border:1px solid #1A2550;border-radius:9px;text-align:center;vertical-align:middle">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A5ACCD" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </td>
+          <td style="padding-left:12px;vertical-align:middle">
+            <div style="font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:#707AA9">Ac&uacute;mulo</div>
+            <div style="font-size:12px;color:#455084;margin-top:2px;letter-spacing:.2px">{{ accum_promos|length }} promo&ccedil;&atilde;o{{ '&otilde;es' if accum_promos|length > 1 else '' }} detectada{{ 's' if accum_promos|length > 1 else '' }}</div>
           </td>
         </tr>
       </table>
@@ -56,10 +60,10 @@
 {% endif %}
 
 {% if not transfer_promos and not accum_promos %}
-<table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:20px">
+<table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:24px">
   <tr>
-    <td style="background:#0B1122;border:1px solid #0E163B;border-radius:10px;padding:20px;text-align:center;color:#455084;font-size:14px">
-      Nenhuma promoção nova desde o último scan.
+    <td style="background:#0B1122;border:1px solid #1A2550;border-radius:12px;padding:24px;text-align:center;color:#455084;font-size:14px">
+      Nenhuma promo&ccedil;&atilde;o nova desde o &uacute;ltimo scan.
     </td>
   </tr>
 </table>

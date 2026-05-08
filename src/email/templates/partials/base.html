@@ -7,53 +7,68 @@
   <title>Radar de Milhas — {{ email_title }}</title>
 </head>
 <!--
-  Fin Fanfa Design System — dark theme
-  Paleta: #01040A (base) · #070C18 (card) · #0E163B (border) · #1C60DA (azul) · #CED4F2 (texto)
-  Font stack: system sans (Geist não é suportada em clientes de email)
+  Fin Fanfa Design System — dark premium email
+  #01040A base · #070C18 card · #1C60DA electric blue · #CED4F2 text
+  Logo via hosted PNG: milhas.felipefinfanfa.com.br/assets/images/
 -->
-<body style="margin:0;padding:0;background:#020617;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;color:#CED4F2;-webkit-font-smoothing:antialiased">
+<body style="margin:0;padding:0;background:#01040A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;color:#CED4F2;-webkit-font-smoothing:antialiased">
 
-  <table width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#020617" style="background:#020617">
+  <table width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#01040A" style="background:#01040A">
     <tr>
-      <td align="center" style="padding:32px 12px 48px">
+      <td align="center" style="padding:36px 12px 52px">
 
-        <table width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:600px">
+        <table width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:580px">
 
-          <!-- Barra de acento superior — azul elétrico -->
+          <!-- ── Wordmark header ── -->
           <tr>
-            <td height="3" bgcolor="#1C60DA" style="background:#1C60DA;border-radius:8px 8px 0 0;line-height:3px;font-size:3px">&#8203;</td>
-          </tr>
-
-          <!-- Card principal -->
-          <tr>
-            <td bgcolor="#070C18" style="background:#070C18;border:1px solid #0E163B;border-top:none;border-radius:0 0 14px 14px">
-
-              <!-- Header -->
+            <td style="padding:0 0 20px">
               <table width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
-                  <td style="padding:32px 32px 24px;border-bottom:1px solid #0E163B">
+                  <td style="vertical-align:middle">
+                    <img src="https://milhas.felipefinfanfa.com.br/assets/images/logo-wordmark.png"
+                         alt="Radar de Milhas" width="110" height="33"
+                         style="display:block;border:0;height:auto;max-width:110px">
+                  </td>
+                  <td style="text-align:right;vertical-align:middle">
+                    <span style="font-size:10px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:#455084">
+                      milhas.felipefinfanfa.com.br
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ── Barra de acento superior ── -->
+          <tr>
+            <td height="3" bgcolor="#1C60DA" style="background:#1C60DA;border-radius:12px 12px 0 0;line-height:3px;font-size:3px">&#8203;</td>
+          </tr>
+
+          <!-- ── Card principal ── -->
+          <tr>
+            <td bgcolor="#070C18" style="background:#070C18;border:1px solid #1A2550;border-top:none;border-radius:0 0 16px 16px">
+
+              <!-- Header do card -->
+              <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td style="padding:28px 32px 22px;border-bottom:1px solid #111B35">
                     <table width="100%" cellspacing="0" cellpadding="0" border="0">
                       <tr>
-                        <td>
+                        <td style="vertical-align:middle">
                           <div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1C60DA;margin-bottom:10px">
                             Radar de Milhas
                           </div>
-                          <div style="font-size:24px;font-weight:700;color:#CED4F2;letter-spacing:-.5px;line-height:1.2">
+                          <div style="font-size:26px;font-weight:700;color:#CED4F2;letter-spacing:-.6px;line-height:1.15">
                             {{ header_title | safe }}
                           </div>
-                          <div style="font-size:12px;color:#455084;margin-top:8px;text-transform:capitalize">
+                          <div style="font-size:12px;color:#455084;margin-top:8px;text-transform:capitalize;letter-spacing:.3px">
                             {{ date_str }}
                           </div>
                         </td>
-                        <td style="text-align:right;vertical-align:middle;padding-left:16px;width:52px">
-                          <!-- F lettermark inline -->
-                          <div style="width:44px;height:44px;background:#0B1122;border:1px solid #1C60DA;border-radius:10px;text-align:center;line-height:44px">
-                            <svg width="16" height="24" viewBox="0 0 66.704 99.392" fill="#CED4F2" style="display:inline-block;vertical-align:middle">
-                              <path d="M 15.288 89.438 L 15.288 53.193 L 63.5 53.193 L 65.181 43.164 L 15.288 43.164 L 3.164 43.164 L 3.164 53.193 L 3.164 89.438 L 15.288 89.438 Z" fill-rule="nonzero"/>
-                              <path d="M 66.704 0 L 0 0 L 3.164 9.902 L 15.288 9.902 L 63.5 9.902 L 66.704 0 Z" fill-rule="nonzero"/>
-                              <path d="M 0 0 L 15.305 0.03 L 14.208 3.37 L 1.09 3.345 L 0 0 Z" fill-rule="nonzero" transform="matrix(-1,0.001,-0.001,-1,16.586,99.371)"/>
-                            </svg>
-                          </div>
+                        <td style="text-align:right;vertical-align:top;padding-left:20px;width:48px">
+                          <img src="https://milhas.felipefinfanfa.com.br/assets/images/logo-monogram.png"
+                               alt="F" width="44" height="44"
+                               style="display:block;border:0;border-radius:10px;width:44px;height:44px">
                         </td>
                       </tr>
                     </table>
@@ -64,7 +79,7 @@
               <!-- Body -->
               <table width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
-                  <td bgcolor="#070C18" style="padding:24px 32px 8px;background:#070C18">
+                  <td bgcolor="#070C18" style="padding:28px 32px 12px;background:#070C18">
                     {% block body %}{% endblock %}
                   </td>
                 </tr>
@@ -73,8 +88,8 @@
               <!-- Divisor -->
               <table width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
-                  <td style="padding:8px 32px 0">
-                    <div style="height:1px;background:#0E163B;font-size:0;line-height:0">&#8203;</div>
+                  <td style="padding:0 32px">
+                    <div style="height:1px;background:#111B35;font-size:0;line-height:0">&#8203;</div>
                   </td>
                 </tr>
               </table>
@@ -82,40 +97,45 @@
               <!-- Footer -->
               <table width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
-                  <td bgcolor="#04080F" style="padding:20px 32px 28px;background:#04080F;border-radius:0 0 14px 14px">
+                  <td style="padding:20px 32px 28px;border-radius:0 0 16px 16px">
+
                     {% if manage_url %}
-                    <table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:16px">
+                    <table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:18px">
                       <tr>
                         <td>
                           <a href="{{ manage_url }}"
-                             style="display:inline-block;background:#0B1122;color:#7EB0FF;font-size:12px;font-weight:600;text-decoration:none;padding:8px 16px;border-radius:8px;border:1px solid #242F60">
+                             style="display:inline-block;background:#111B35;color:#7EB0FF;font-size:12px;font-weight:600;text-decoration:none;padding:9px 18px;border-radius:8px;border:1px solid #1C60DA;letter-spacing:.2px">
                             Gerenciar prefer&ecirc;ncias
                           </a>
                         </td>
                       </tr>
                     </table>
                     {% endif %}
+
                     <table width="100%" cellspacing="0" cellpadding="0" border="0">
                       <tr>
-                        <td style="font-size:11px;color:#455084;line-height:1.7">
-                          Gerado automaticamente pelo <strong style="color:#707AA9">Radar de Milhas</strong>.
-                          Dados baseados em informa&ccedil;&otilde;es p&uacute;blicas &mdash;
-                          confira nas fontes originais antes de transferir pontos.
-                          {% if unsubscribe_url %}
-                          &nbsp;&middot;&nbsp;
-                          <a href="{{ unsubscribe_url }}"
-                             style="color:#455084;text-decoration:underline;font-size:11px">
-                            Cancelar inscri&ccedil;&atilde;o
-                          </a>
-                          {% endif %}
-                        </td>
-                        <td style="text-align:right;vertical-align:middle;padding-left:16px;white-space:nowrap">
-                          <span style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#242F60">
-                            Fin Fanfa
+                        <td style="vertical-align:middle">
+                          <span style="font-size:11px;color:#455084;line-height:1.7">
+                            Gerado automaticamente pelo <strong style="color:#707AA9">Radar de Milhas</strong>.
+                            Dados baseados em informa&ccedil;&otilde;es p&uacute;blicas &mdash;
+                            confira nas fontes originais antes de transferir pontos.
+                            {% if unsubscribe_url %}
+                            &nbsp;&middot;&nbsp;
+                            <a href="{{ unsubscribe_url }}"
+                               style="color:#455084;text-decoration:underline;font-size:11px">
+                              Cancelar inscri&ccedil;&atilde;o
+                            </a>
+                            {% endif %}
                           </span>
+                        </td>
+                        <td style="text-align:right;vertical-align:middle;padding-left:20px;white-space:nowrap">
+                          <img src="https://milhas.felipefinfanfa.com.br/assets/images/logo-wordmark.png"
+                               alt="Fin Fanfa" width="64" height="19"
+                               style="display:block;border:0;opacity:.35;height:auto;max-width:64px">
                         </td>
                       </tr>
                     </table>
+
                   </td>
                 </tr>
               </table>
