@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime, timedelta
+
 from src.pipeline.preference_filter import filter_for_user, matches_preferences
 from src.types import PromotionData, TransferPair, UserPreferencesData
 
@@ -16,6 +18,7 @@ def _make_transfer_promo(origin: str, dest: str, bonus: float = 100.0) -> Promot
         origin_program=origin,
         destination_program=dest,
         bonus_percent=bonus,
+        ends_at=datetime.now(UTC) + timedelta(days=7),
     )
 
 
@@ -27,6 +30,7 @@ def _make_accum_promo(program: str) -> PromotionData:
         source_url="https://example.com",
         promo_type="other",
         origin_program=program,
+        ends_at=datetime.now(UTC) + timedelta(days=7),
     )
 
 
@@ -103,3 +107,32 @@ def test_case_insensitive_matching():
     promo = _make_transfer_promo("Livelo", "Smiles")
     prefs = _make_prefs(transfer_pairs=[("livelo", "smiles")])
     assert matches_preferences(promo, prefs) is True
+
+
+def test_filter_excludes_promos_with_null_ends_at():
+    prefs = _make_prefs(transfer_pairs=[("esfera", "smiles")])
+    promo_no_end = PromotionData(
+        fingerprint="fp1",
+        source_program="esfera",
+        source_type="rss",
+        source_url="http://x.com",
+        promo_type="transfer_bonus",
+        origin_program="esfera",
+        destination_program="smiles",
+        bonus_percent=100.0,
+        ends_at=None,  # must be excluded
+    )
+    promo_active = PromotionData(
+        fingerprint="fp2",
+        source_program="esfera",
+        source_type="rss",
+        source_url="http://x.com",
+        promo_type="transfer_bonus",
+        origin_program="esfera",
+        destination_program="smiles",
+        bonus_percent=80.0,
+        ends_at=datetime.now(UTC) + timedelta(days=7),
+    )
+    result = filter_for_user([promo_no_end, promo_active], prefs)
+    assert len(result) == 1
+    assert result[0].fingerprint == "fp2"

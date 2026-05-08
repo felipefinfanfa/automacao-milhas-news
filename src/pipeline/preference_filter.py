@@ -45,7 +45,7 @@ def filter_for_user(
 ) -> list[PromotionData]:
     """Retorna somente as promoções ativas que batem com as preferências do usuário."""
     now = datetime.now(UTC)
-    active = [p for p in promos if p.ends_at is None or p.ends_at > now]
+    active = [p for p in promos if p.ends_at is not None and p.ends_at > now]
     matched = [p for p in active if matches_preferences(p, prefs)]
     logger.debug(
         "preference_filter user=%s: %d/%d promos passaram (%d expiradas descartadas)",
