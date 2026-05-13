@@ -35,9 +35,9 @@ PROGRAM_URLS: dict[str, str] = {
 
 NEWS_RSS_FEEDS: dict[str, str] = {
     "melhores_destinos": "https://www.melhoresdestinos.com.br/feed",
-    "passageiro_de_primeira": "https://www.passageirodeprimeira.com.br/feed",
-    "pontos_pra_voar": "https://www.pontospravolar.com/feed",
-    "mestre_das_milhas": "https://www.mestredasmilhas.com/feed",
+    "passageiro_de_primeira": "https://passageirodeprimeira.com/feed/",
+    "pontos_pra_voar": "https://pontospravoar.com/feed/",
+    "mestre_das_milhas": "https://mestredasmilhas.com/feed",
     "melhores_cartoes": "https://www.melhorescartoes.com.br/feed",
 }
 
