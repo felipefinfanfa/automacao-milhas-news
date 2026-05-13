@@ -8,25 +8,41 @@ Monitoramento automático de promoções de transferência e acúmulo de milhas 
 
 ## Como funciona
 
-O sistema roda 6 varreduras por dia (06h, 09h, 12h, 15h, 18h, 21h BRT) usando três camadas de monitoramento:
+O pipeline roda 6 vezes por dia via GitHub Actions (06h, 09h, 12h, 15h, 18h, 21h BRT). Quando uma nova promoção é detectada, um e-mail é enviado imediatamente para todos os usuários cujas preferências batem com ela.
 
-| Tier | Quando | Monitores |
-|------|--------|-----------|
-| 1 | Todos os 6 scans | Landing pages, hash diff, RSS de notícias, Google News |
-| 2 | 09h e 18h | Sitemap, robots.txt, scraping direto de notícias |
-| 3 | 06h | URL fuzzing, visual diff (Playwright), CT logs, DNS |
+```
+[GitHub Actions Cron]
+        ↓
+   [Monitors]          # coleta sinais das fontes
+        ↓
+   [Extractor]         # interpreta e valida cada sinal
+        ↓
+   [Dedup]             # descarta o que já foi visto
+        ↓
+[Preference Filter]    # filtra por programa/par de cada usuário
+        ↓
+[Email Dispatcher]     # envia via Resend ou Gmail SMTP
+```
 
-Ao detectar uma nova promoção, o sistema envia até 3 e-mails por usuário (dia 1, 24h e 48h depois) — apenas se a promoção ainda estiver ativa e bater com as preferências cadastradas.
+### Tiers de monitoramento
+
+| Tier | Scans | Monitores |
+|------|-------|-----------|
+| 1 | 09h, 12h, 15h, 21h | Landing pages dos programas, hash diff, RSS de notícias, Google News |
+| 2 | 06h, 18h | Tier 1 + sitemap, robots.txt, scraping direto de notícias |
 
 ---
 
 ## Stack
 
-- **Python 3.12** — FastAPI · APScheduler · SQLAlchemy 2 · Alembic · Pydantic v2
-- **Scraping** — Playwright + stealth · cloudscraper · httpx · BeautifulSoup4
-- **Banco** — Supabase (PostgreSQL)
-- **E-mail** — Resend (primário) · Gmail SMTP (fallback)
-- **Deploy** — Docker · Traefik · VPS Hostinger · GitHub Actions
+- **Python 3.12** — pipeline determinístico, sem framework web
+- **Scraping** — `cloudscraper` (bypass Cloudflare) · `httpx` · `BeautifulSoup4` · `feedparser`
+- **Banco** — Supabase (PostgreSQL) via `SQLAlchemy 2` + `Alembic`
+- **E-mail** — Resend (primário) · Gmail SMTP (fallback) · templates `Jinja2`
+- **Validação** — `Pydantic v2`
+- **Frontend** — site estático em `public/` servido pelo Vercel
+- **API** — handlers Python serverless em `api/` (Vercel Functions)
+- **CI/CD** — GitHub Actions (cron + deploy)
 
 ---
 
@@ -34,38 +50,64 @@ Ao detectar uma nova promoção, o sistema envia até 3 e-mails por usuário (di
 
 ```
 src/
-├── monitors/          # 1 arquivo por método de detecção
-├── processor/         # extração, dedup e filtro por preferências
-├── email/             # dispatcher, sequência de 3 dias e templates Jinja2
-├── scheduler/jobs/    # tier1.py · tier2.py · tier3.py
-├── api/               # FastAPI — cadastro e preferências do usuário
-├── db/                # models SQLAlchemy + migrations Alembic
-└── config/            # settings via pydantic-settings
+├── pipeline/
+│   ├── monitors/      # um arquivo por método de detecção → list[RawSignal]
+│   ├── extractor.py   # RawSignal → PromotionData
+│   ├── dedup.py       # fingerprint SHA-256, persiste no banco
+│   ├── preference_filter.py
+│   └── dispatcher.py  # Resend → Gmail SMTP fallback
+├── db/
+│   ├── models.py
+│   └── migrations/    # versionadas via Alembic
+├── api/schemas/       # schemas Pydantic reutilizados pelos handlers Vercel
+├── config/settings.py
+├── tools/             # HTTP client, user-agent rotation
+├── email/templates/   # confirmation.html · day1.html (Jinja2)
+└── types.py           # contratos: RawSignal, PromotionData, UserPreferencesData
+
+api/                   # handlers Python serverless (Vercel)
+├── preferences/
+│   ├── register.py
+│   ├── slots.py
+│   └── [user_id].py
+└── unsubscribe/
+    └── [token].py
+
+public/                # site de cadastro (HTML/CSS/JS estático)
+scripts/
+├── run_pipeline.py    # entry point do GitHub Actions
+├── run_now.py         # scan manual + envio imediato
+├── send_test_email.py # envia templates com dados mock (sem tocar no banco)
+└── backfill_promos.py # reprocessa snapshots históricos (--dry-run obrigatório)
 ```
 
 ---
 
 ## Setup local
 
-**Pré-requisitos:** Python 3.12, Docker
+**Pré-requisitos:** Python 3.12
 
 ```bash
 # Dependências
 pip install -r requirements.txt
-playwright install chromium
 
-# Banco
-cp .env.example .env   # preencher DATABASE_URL e demais variáveis
+# Configurar variáveis
+cp .env.example .env   # preencher DATABASE_URL, credenciais de e-mail etc.
+
+# Rodar migrations
 alembic upgrade head
 
-# Rodar (sem Traefik)
-DOCKER_BUILDKIT=0 docker-compose -f docker-compose.yml -f docker-compose.local.yml up
+# Executar pipeline manualmente
+python scripts/run_pipeline.py --tier 1
+python scripts/run_pipeline.py --tier 2
 
-# Testar 1 ciclo completo sem enviar e-mails
-python -m src.scheduler.jobs --dry-run
+# Testar envio de e-mail (sem banco, dados mock)
+python scripts/send_test_email.py
+python scripts/send_test_email.py --template confirmation
+python scripts/send_test_email.py --template day1
 
-# API em modo desenvolvimento
-uvicorn src.api.main:app --reload
+# API local (Vercel CLI)
+vercel dev
 ```
 
 ---
@@ -79,7 +121,7 @@ uvicorn src.api.main:app --reload
 | `SUPABASE_KEY` | Service role key |
 | `RESEND_API_KEY` | Chave Resend (e-mail primário) |
 | `GMAIL_USER` / `GMAIL_APP_PASSWORD` | Fallback SMTP |
-| `DIGEST_RECIPIENT` | E-mail do destinatário do digest |
+| `DIGEST_RECIPIENT` | E-mail para testes manuais |
 | `SENTRY_DSN` | DSN Sentry (opcional) |
 | `APP_ENV` | `production` ou `development` |
 
@@ -90,21 +132,20 @@ Veja `.env.example` para o template completo.
 ## Qualidade
 
 ```bash
-ruff check . && ruff format --check . && mypy src
-pytest tests/unit
-pytest tests/integration   # requer .env com Supabase de teste
+ruff check . && ruff format --check . && mypy src/
+pytest tests/unit/
+pytest tests/integration/   # requer .env com Supabase configurado
 ```
-
-Cobertura mínima: 85% em `src/processor/` e `src/email/`.
 
 ---
 
 ## Deploy
 
-Push para `master` dispara deploy automático via GitHub Actions:
+**Pipeline (GitHub Actions):**
+- `pipeline-tier1.yml` — 09h, 12h, 15h, 21h BRT
+- `pipeline-tier2.yml` — 06h, 18h BRT
+- `supabase-keepalive.yml` — a cada 5 dias (mantém o free tier ativo)
 
-1. SSH na VPS Hostinger
-2. `git pull origin master`
-3. `docker compose up -d --build`
-
-A API fica exposta em `milhas.felipefinfanfa.com.br` via Traefik com TLS automático.
+**Frontend + API (Vercel):**
+- `public/` servido em `milhas.felipefinfanfa.com.br`
+- `api/` exposto em `/api/*` como Vercel Functions

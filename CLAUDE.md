@@ -79,7 +79,10 @@ DIGEST_RECIPIENT   # fallback email for pipeline test sends
   /unsubscribe
 /public             # Static registration website (served by Vercel)
 /scripts
-  run_pipeline.py   # GitHub Actions entry point — python scripts/run_pipeline.py --tier N
+  run_pipeline.py    # GitHub Actions entry point — python scripts/run_pipeline.py --tier N
+  run_now.py         # scan manual + envio imediato para DIGEST_RECIPIENT
+  send_test_email.py # envia confirmation e day1 com dados mock (sem banco, sem dedup)
+  backfill_promos.py # reprocessa snapshots históricos — sempre usar --dry-run primeiro
 /tests
   /unit
   /integration
