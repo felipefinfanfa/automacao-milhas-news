@@ -149,6 +149,8 @@ def dispatch_confirmation(
     unsubscribe_token: str | None,
     transfer_pairs: list[Any],
     accumulation_programs: list[str],
+    flight_routes: list[Any] | None = None,
+    flight_programs: list[str] | None = None,
     name: str | None = None,
 ) -> bool:
     """Sends confirmation email after user saves preferences."""
@@ -167,6 +169,8 @@ def dispatch_confirmation(
             "user": user,
             "transfer_pairs": transfer_pairs,
             "accumulation_programs": accumulation_programs,
+            "flight_routes": flight_routes or [],
+            "flight_programs": flight_programs or [],
             "unsubscribe_url": unsubscribe_url,
             "manage_url": manage_url,
         },
@@ -208,7 +212,11 @@ def dispatch_day1(
 
     sorted_promos = sorted(promos_to_send, key=lambda p: p.bonus_percent or 0, reverse=True)
     transfer_promos = [p for p in sorted_promos if p.promo_type == "transfer_bonus"]
-    accum_promos = [p for p in sorted_promos if p.promo_type != "transfer_bonus"]
+    flight_promos = [p for p in sorted_promos if p.promo_type == "flight_award"]
+    accum_promos = [
+        p for p in sorted_promos if p.promo_type not in ("transfer_bonus", "flight_award")
+    ]
+    promotions = transfer_promos + flight_promos + accum_promos
 
     unsubscribe_url, manage_url = _build_email_urls(user_id, unsubscribe_token)
 
@@ -217,7 +225,9 @@ def dispatch_day1(
         {
             "email_title": "Promoções para Você — Radar de Milhas",
             "header_title": 'Promoções <span style="color:#0891b2">para Você</span>',
+            "promotions": promotions,
             "transfer_promos": transfer_promos,
+            "flight_promos": flight_promos,
             "accum_promos": accum_promos,
             "unsubscribe_url": unsubscribe_url,
             "manage_url": manage_url,
