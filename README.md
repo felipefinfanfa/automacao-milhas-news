@@ -1,8 +1,13 @@
 # Radar de Milhas
 
-Monitoramento automático de promoções de transferência e acúmulo de milhas nos principais programas brasileiros. Detecta novas promoções em até 1 hora e envia alertas por e-mail personalizados de acordo com as preferências de cada usuário.
+Monitoramento automático de promoções de milhas nos principais programas brasileiros. Detecta novas promoções em até 1 hora e envia alertas por e-mail personalizados de acordo com as preferências de cada usuário.
 
 **Programas monitorados:** Smiles · Azul TudoAzul · LATAM Pass · Livelo · Esfera
+
+**Tipos de promoção detectados:**
+- **Transferência com bônus** — bônus de % ao transferir pontos entre programas (ex: Esfera → Smiles com 100% de bônus)
+- **Acúmulo de pontos** — campanhas de multiplicação de pontos em parceiros
+- **Passagens emitidas com milhas** — alertas de voos disponíveis para emissão com milhas, filtráveis por rota IATA e programa
 
 ---
 
@@ -13,13 +18,13 @@ O pipeline roda 6 vezes por dia via GitHub Actions (06h, 09h, 12h, 15h, 18h, 21h
 ```
 [GitHub Actions Cron]
         ↓
-   [Monitors]          # coleta sinais das fontes
+   [Monitors]          # coleta sinais das fontes (RSS, scraping, hash diff, Google News)
         ↓
-   [Extractor]         # interpreta e valida cada sinal
+   [Extractor]         # interpreta sinal → PromotionData (transfer_bonus / flight_award / other)
         ↓
-   [Dedup]             # descarta o que já foi visto
+   [Dedup]             # fingerprint SHA-256, descarta o que já foi visto
         ↓
-[Preference Filter]    # filtra por programa/par de cada usuário
+[Preference Filter]    # filtra por programa/par de transferência/rota IATA de cada usuário
         ↓
 [Email Dispatcher]     # envia via Resend ou Gmail SMTP
 ```
@@ -52,18 +57,20 @@ O pipeline roda 6 vezes por dia via GitHub Actions (06h, 09h, 12h, 15h, 18h, 21h
 src/
 ├── pipeline/
 │   ├── monitors/      # um arquivo por método de detecção → list[RawSignal]
-│   ├── extractor.py   # RawSignal → PromotionData
+│   ├── extractor.py   # RawSignal → PromotionData (transfer_bonus | flight_award | other)
 │   ├── dedup.py       # fingerprint SHA-256, persiste no banco
 │   ├── preference_filter.py
 │   └── dispatcher.py  # Resend → Gmail SMTP fallback
 ├── db/
 │   ├── models.py
-│   └── migrations/    # versionadas via Alembic
+│   └── migrations/    # versionadas via Alembic (009 = colunas flight_award)
 ├── api/schemas/       # schemas Pydantic reutilizados pelos handlers Vercel
-├── config/settings.py
+├── config/
+│   ├── settings.py    # env vars + URLs RSS + programas válidos
+│   └── airports.py    # CITY_TO_IATA (~80 entradas) + AIRPORTS_LIST para autocomplete
 ├── tools/             # HTTP client, user-agent rotation
 ├── email/templates/   # confirmation.html · day1.html (Jinja2)
-└── types.py           # contratos: RawSignal, PromotionData, UserPreferencesData
+└── types.py           # RawSignal, PromotionData, UserPreferencesData, FlightRoute
 
 api/                   # handlers Python serverless (Vercel)
 ├── preferences/

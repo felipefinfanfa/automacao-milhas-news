@@ -6,7 +6,12 @@
 
 ## 1. Project
 
-**What it does:** Monitors transfer and accumulation promotions across Brazilian miles programs (Smiles, Azul, LATAM, Livelo, Esfera) and sends an immediate email alert for every new promotion detected. Target operational cost: zero (except hosting).
+**What it does:** Monitors three types of promotions across Brazilian miles programs (Smiles, Azul, LATAM, Livelo, Esfera) and sends an immediate email alert for every new promotion detected. Target operational cost: zero (except hosting).
+
+**Promotion types:**
+- `transfer_bonus` — bonus % when transferring points between programs (e.g. Esfera → Smiles)
+- `flight_award` — flights bookable with miles, with IATA route extraction and user route/program filtering
+- `other` — accumulation campaigns, card bonuses, etc.
 
 **Trigger:** Cron via GitHub Actions at 6 times/day (06h, 09h, 12h, 15h, 18h, 21h BRT). Email sent whenever a new active promotion is detected — no routine digest.
 
@@ -44,7 +49,9 @@ Monitors run sequentially by tier. Each step is a deterministic function. No age
 
 **Integrations:**
 - Programs: Smiles, Azul, LATAM, Livelo, Esfera — no auth
-- News: Melhores Destinos, Passageiro de Primeira, Melhores Cartões, Pontos pra Voar, Mestre das Milhas — RSS preferred, scraping as fallback
+- News (RSS): Melhores Destinos, Passageiro de Primeira, Melhores Cartões, Pontos pra Voar, Mestre das Milhas
+  - Correct feed URLs in `src/config/settings.py` → `NEWS_RSS_FEEDS`
+  - These feeds also contain `flight_award` articles — no separate monitor needed
 - Email: Resend (3,000/month) — preferred. Gmail SMTP (500/day) as fallback
 - Database: Supabase free tier (PostgreSQL). Errors: Sentry free tier
 
@@ -65,19 +72,25 @@ DIGEST_RECIPIENT   # fallback email for pipeline test sends
 
 ```
 /src
-  types.py          # shared contracts: RawSignal, PromotionData, UserPreferencesData
+  types.py          # shared contracts: RawSignal, PromotionData, UserPreferencesData, FlightRoute
   /pipeline         # main flow: monitors → extractor → dedup → preference_filter → dispatcher
     /monitors       # one file per detection method — all return list[RawSignal]
   /tools            # HTTP utilities used by monitors
-  /config           # settings via env vars (pydantic-settings)
+  /config
+    settings.py     # env vars, NEWS_RSS_FEEDS, LOYALTY_PROGRAMS, VALID_TRANSFER_PAIRS
+    airports.py     # CITY_TO_IATA (city→IATA mapping) + AIRPORTS_LIST (frontend autocomplete)
   /api              # Pydantic schemas only (reused by Vercel handlers)
     /schemas
-  /email/templates  # Jinja2 — day1, confirmation
-  /db/migrations    # versioned Alembic migrations
+      preferences.py  # UserPreferencesIn/Out, TransferPairIn, FlightRouteIn
+  /email/templates  # Jinja2 — day1.html, confirmation.html
+  /db
+    models.py       # SQLAlchemy models — Promotion, UserPreferences, EmailLog, etc.
+    /migrations     # versioned Alembic migrations (current head: 009)
 /api                # Vercel Python serverless handlers (one file per route)
   /preferences
   /unsubscribe
 /public             # Static registration website (served by Vercel)
+  /js/app.js        # all frontend JS including flight preferences logic
 /scripts
   run_pipeline.py    # GitHub Actions entry point — python scripts/run_pipeline.py --tier N
   run_now.py         # scan manual + envio imediato para DIGEST_RECIPIENT
@@ -157,9 +170,11 @@ pytest tests/integration/
 
 **Secrets:** NEVER commit `.env`. Hardcoded credential detected: stop immediately and report.
 
-**Idempotency:**
-- Transfer: `sha256(origin_program + dest_program + bonus_pct + promo_type + ends_at.date())`
-- Accumulation: same fingerprint structure via `extractor._fingerprint()`
+**Idempotency — fingerprint by promo_type:**
+- `transfer_bonus`: `sha256([origin_program, dest_program, bonus_pct, "transfer_bonus", ends_at.date()])`
+- `flight_award` with route resolved: `sha256([origin_iata, destination_iata, "flight_award", ends_at.date()])`
+- `flight_award` without route: `sha256([source_url, "flight_award", ends_at.date()])` — prevents same-day collision
+- `other`/accumulation: same structure as transfer_bonus via `extractor._fingerprint()`
 
 **Email sequence (day 1 only):**
 - Immediate send on first detection of an active promotion.
@@ -167,10 +182,17 @@ pytest tests/integration/
 - NEVER send if `promotion.ends_at < now()` or `promotion.ends_at is None`.
 
 **Promotion validity:**
-- `ends_at` is REQUIRED — promotions without an end date are discarded by the extractor.
+- `ends_at` is REQUIRED for ALL promo types including `flight_award` — articles without an end date are discarded.
 - `starts_at` is optional — if missing, treat as active from publication date.
 - "Hoje é o último dia" / "último dia" / "encerra hoje" → `ends_at = article published_date` (end of day).
 - The extractor uses `signal.fetched_at` as the article reference date. RSS monitors set `fetched_at = entry.published_parsed`.
+
+**flight_award preference matching:**
+- Users configure `flight_routes: list[FlightRoute]` (each has optional `origin_iata`/`destination_iata`) and `flight_programs: list[str]`.
+- At least one of origin_iata or destination_iata must be set per route (validated in frontend).
+- Match logic: program filter (AND) → route OR-logic. `None` on a route field = wildcard.
+- RSS articles have `source_program="unknown"` — the loyalty program is detected from text and stored in `origin_program`. The program filter uses `promo.origin_program or promo.source_program`. Articles where no known program is detected pass the filter (don't drop silently).
+- Route extraction uses `src/config/airports.py:CITY_TO_IATA` to map city names → IATA codes.
 
 **Data integrity:**
 - Schema changes via versioned Alembic migration — zero manual `ALTER TABLE`.
