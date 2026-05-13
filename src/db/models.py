@@ -43,6 +43,9 @@ class Promotion(Base):
     requires_card: Any = Column(Boolean, nullable=False, default=False)
     cpf_limit: Any = Column(Text)
     confidence: Any = Column(Numeric(3, 2), nullable=False, default=0.80)
+    origin_iata: Any = Column(Text)
+    destination_iata: Any = Column(Text)
+    miles_count: Any = Column(Integer)
     raw_data: Any = Column(JSONB)
     created_at: Any = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     updated_at: Any = Column(
@@ -82,6 +85,8 @@ class UserPreferences(Base):
     monitored_programs: Any = Column(JSONB, nullable=False, default=list)
     transfer_pairs: Any = Column(JSONB, nullable=False, default=list)
     accumulation_programs: Any = Column(JSONB, nullable=False, default=list)
+    flight_routes: Any = Column(JSONB, nullable=False, default=list)
+    flight_programs: Any = Column(JSONB, nullable=False, default=list)
     created_at: Any = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     updated_at: Any = Column(
         DateTime(timezone=True),
