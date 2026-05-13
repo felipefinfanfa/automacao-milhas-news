@@ -24,6 +24,9 @@ playwright-report/
 # Portfolio (design reference, not deployed from here)
 portfolio/
 
+# Internal planning docs
+docs/
+
 # Claude Code (configurações locais)
 .claude/settings.local.json
 .claude/skills/
