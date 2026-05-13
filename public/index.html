@@ -168,6 +168,44 @@
       <div class="programs-grid" id="accum-grid"></div>
     </div>
 
+    <!-- Passagens com Milhas -->
+    <div class="card reveal">
+      <div class="card-title">Passagens com Milhas</div>
+      <p class="card-desc">
+        Alertas de passagens emitidas com milhas. Configure os programas que você usa
+        e as rotas de interesse — ao menos origem ou destino é obrigatório por rota.
+      </p>
+
+      <div class="pair-wizard-label" style="margin-bottom:8px;">Programas de milhas que você usa para emitir:</div>
+      <div class="programs-grid" id="flight-programs-grid"></div>
+
+      <div style="margin-top:20px;">
+        <div class="pair-wizard-label" style="margin-bottom:8px;">Rotas de interesse:</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
+          <div style="flex:1;min-width:140px;">
+            <label style="font-size:11px;color:#707AA9;display:block;margin-bottom:4px;">Origem (opcional)</label>
+            <input id="flight-origin-input" list="airports-datalist"
+              placeholder="GRU, BSB…"
+              style="width:100%;box-sizing:border-box;background:#0D1424;border:1px solid rgba(206,212,242,0.15);border-radius:8px;padding:9px 12px;color:#CED4F2;font-size:14px;">
+          </div>
+          <div style="flex:1;min-width:140px;">
+            <label style="font-size:11px;color:#707AA9;display:block;margin-bottom:4px;">Destino (opcional)</label>
+            <input id="flight-dest-input" list="airports-datalist"
+              placeholder="MIA, LHR…"
+              style="width:100%;box-sizing:border-box;background:#0D1424;border:1px solid rgba(206,212,242,0.15);border-radius:8px;padding:9px 12px;color:#CED4F2;font-size:14px;">
+          </div>
+          <div style="padding-top:18px;">
+            <button class="btn btn-sm" onclick="addFlightRoute()">Adicionar</button>
+          </div>
+        </div>
+        <datalist id="airports-datalist"></datalist>
+        <div id="flight-route-error" class="inline-error"></div>
+        <div id="flight-routes-list" class="pairs-list">
+          <span class="pairs-empty">Nenhuma rota adicionada.</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Salvar -->
     <div class="card reveal">
       <button class="btn btn-save" id="btn-save" onclick="savePreferences()">

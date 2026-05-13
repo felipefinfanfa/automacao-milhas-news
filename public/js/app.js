@@ -1,5 +1,68 @@
 /* Miles Radar — Application Logic */
 
+const AIRPORTS_LIST = [
+  {iata:"GRU",label:"GRU — São Paulo / Guarulhos"},
+  {iata:"CGH",label:"CGH — São Paulo / Congonhas"},
+  {iata:"VCP",label:"VCP — Campinas / Viracopos"},
+  {iata:"GIG",label:"GIG — Rio de Janeiro / Galeão"},
+  {iata:"SDU",label:"SDU — Rio de Janeiro / Santos Dumont"},
+  {iata:"BSB",label:"BSB — Brasília"},
+  {iata:"SSA",label:"SSA — Salvador"},
+  {iata:"REC",label:"REC — Recife"},
+  {iata:"FOR",label:"FOR — Fortaleza"},
+  {iata:"BEL",label:"BEL — Belém"},
+  {iata:"MAO",label:"MAO — Manaus"},
+  {iata:"CWB",label:"CWB — Curitiba"},
+  {iata:"POA",label:"POA — Porto Alegre"},
+  {iata:"FLN",label:"FLN — Florianópolis"},
+  {iata:"CNF",label:"CNF — Belo Horizonte / Confins"},
+  {iata:"MCZ",label:"MCZ — Maceió"},
+  {iata:"NAT",label:"NAT — Natal"},
+  {iata:"JPA",label:"JPA — João Pessoa"},
+  {iata:"SLZ",label:"SLZ — São Luís"},
+  {iata:"CGB",label:"CGB — Cuiabá"},
+  {iata:"CGR",label:"CGR — Campo Grande"},
+  {iata:"VIX",label:"VIX — Vitória"},
+  {iata:"AJU",label:"AJU — Aracaju"},
+  {iata:"MIA",label:"MIA — Miami"},
+  {iata:"JFK",label:"JFK — Nova York"},
+  {iata:"LAX",label:"LAX — Los Angeles"},
+  {iata:"MCO",label:"MCO — Orlando"},
+  {iata:"IAD",label:"IAD — Washington / Dulles"},
+  {iata:"ORD",label:"ORD — Chicago"},
+  {iata:"DFW",label:"DFW — Dallas"},
+  {iata:"SFO",label:"SFO — São Francisco"},
+  {iata:"YYZ",label:"YYZ — Toronto"},
+  {iata:"YUL",label:"YUL — Montreal"},
+  {iata:"EZE",label:"EZE — Buenos Aires"},
+  {iata:"SCL",label:"SCL — Santiago"},
+  {iata:"LIM",label:"LIM — Lima"},
+  {iata:"BOG",label:"BOG — Bogotá"},
+  {iata:"PTY",label:"PTY — Cidade do Panamá"},
+  {iata:"CUN",label:"CUN — Cancún"},
+  {iata:"LIS",label:"LIS — Lisboa"},
+  {iata:"MAD",label:"MAD — Madrid"},
+  {iata:"CDG",label:"CDG — Paris"},
+  {iata:"LHR",label:"LHR — Londres"},
+  {iata:"FRA",label:"FRA — Frankfurt"},
+  {iata:"AMS",label:"AMS — Amsterdam"},
+  {iata:"FCO",label:"FCO — Roma"},
+  {iata:"BCN",label:"BCN — Barcelona"},
+  {iata:"MXP",label:"MXP — Milão"},
+  {iata:"MUC",label:"MUC — Munique"},
+  {iata:"ZRH",label:"ZRH — Zurique"},
+  {iata:"VIE",label:"VIE — Viena"},
+  {iata:"DXB",label:"DXB — Dubai"},
+  {iata:"DOH",label:"DOH — Doha"},
+  {iata:"NRT",label:"NRT — Tóquio"},
+  {iata:"CPT",label:"CPT — Cidade do Cabo"},
+  {iata:"JNB",label:"JNB — Joanesburgo"},
+  {iata:"SYD",label:"SYD — Sydney"},
+  {iata:"BKK",label:"BKK — Bangkok"},
+  {iata:"SIN",label:"SIN — Cingapura"},
+  {iata:"HKG",label:"HKG — Hong Kong"},
+];
+
 const TRANSFER_SOURCES = [
   { id: 'esfera', name: 'Esfera',     color: '#dc2626', bg: 'rgba(220,38,38,0.12)'  },
   { id: 'livelo', name: 'Livelo',     color: '#7c3aed', bg: 'rgba(124,58,237,0.12)' },
@@ -33,6 +96,10 @@ let selectedAccum   = new Set();
 let transferPairs   = [];
 let selectedSources = new Set();
 let selectedDests   = new Set();
+
+// ─── Flight state ─────────────────────────────────────────────
+let flightPrograms = [];
+let flightRoutes = [];
 
 /* ── Slots badge ── */
 async function loadSlots() {
@@ -224,6 +291,98 @@ function renderPairs() {
   });
 }
 
+/* ── Flight programs grid ── */
+function initFlightProgramsGrid() {
+  const grid = document.getElementById('flight-programs-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  ACCUM_PROGRAMS.forEach(p => {
+    const chip = document.createElement('div');
+    chip.className = 'prog-chip' + (flightPrograms.includes(p.id) ? ' selected' : '');
+    chip.dataset.id = p.id;
+    chip.style.setProperty('--prog-color', p.color);
+    chip.style.setProperty('--prog-bg', p.bg);
+    chip.innerHTML = `<span class="prog-dot"></span><span class="prog-name">${p.name}</span>`;
+    chip.addEventListener('click', () => toggleFlightProgram(p.id, chip));
+    grid.appendChild(chip);
+  });
+}
+
+function toggleFlightProgram(prog, el) {
+  if (flightPrograms.includes(prog)) {
+    flightPrograms = flightPrograms.filter(p => p !== prog);
+    el.classList.remove('selected');
+  } else {
+    flightPrograms.push(prog);
+    el.classList.add('selected');
+  }
+}
+
+function populateAirportDatalist() {
+  const dl = document.getElementById('airports-datalist');
+  if (!dl || dl.children.length > 0) return;
+  AIRPORTS_LIST.forEach(a => {
+    const opt = document.createElement('option');
+    opt.value = a.iata;
+    opt.label = a.label;
+    dl.appendChild(opt);
+  });
+}
+
+function _resolveIata(input) {
+  const val = input.trim().toUpperCase();
+  if (AIRPORTS_LIST.find(a => a.iata === val)) return val;
+  const match = AIRPORTS_LIST.find(a => a.label.toUpperCase().includes(val));
+  return match ? match.iata : null;
+}
+
+function addFlightRoute() {
+  const errEl = document.getElementById('flight-route-error');
+  errEl.textContent = '';
+  const originRaw = document.getElementById('flight-origin-input').value.trim();
+  const destRaw = document.getElementById('flight-dest-input').value.trim();
+  if (!originRaw && !destRaw) {
+    errEl.textContent = 'Preencha ao menos origem ou destino.';
+    return;
+  }
+  const originIata = originRaw ? _resolveIata(originRaw) : null;
+  const destIata = destRaw ? _resolveIata(destRaw) : null;
+  if (originRaw && !originIata) { errEl.textContent = 'Origem inválida — use um código IATA da lista.'; return; }
+  if (destRaw && !destIata) { errEl.textContent = 'Destino inválido — use um código IATA da lista.'; return; }
+  flightRoutes.push({ origin_iata: originIata, destination_iata: destIata });
+  document.getElementById('flight-origin-input').value = '';
+  document.getElementById('flight-dest-input').value = '';
+  renderFlightRoutes();
+}
+
+function removeFlightRoute(idx) {
+  flightRoutes.splice(idx, 1);
+  renderFlightRoutes();
+}
+
+function renderFlightRoutes() {
+  const list = document.getElementById('flight-routes-list');
+  if (!list) return;
+  if (!flightRoutes.length) {
+    list.innerHTML = '<span class="pairs-empty">Nenhuma rota adicionada.</span>';
+    return;
+  }
+  list.innerHTML = '';
+  flightRoutes.forEach((r, i) => {
+    const origin = r.origin_iata || 'qualquer';
+    const dest = r.destination_iata || 'qualquer';
+    const tag = document.createElement('div');
+    tag.className = 'pair-tag';
+    tag.innerHTML = `
+      <span class="prog-name">${origin}</span>
+      <span class="pair-tag-arrow">→</span>
+      <span class="prog-name">${dest}</span>
+      <button class="pair-tag-remove" onclick="removeFlightRoute(${i})" title="Remover">×</button>
+    `;
+    list.appendChild(tag);
+  });
+}
+
 /* ── Handle registration submit ── */
 async function handleRegisterSubmit() {
   const nameInput  = document.getElementById('name-input');
@@ -324,6 +483,11 @@ async function loadPreferences() {
       chip.classList.toggle('selected', selectedAccum.has(chip.dataset.id));
     });
 
+    flightRoutes = data.flight_routes || [];
+    flightPrograms = data.flight_programs || [];
+    renderFlightRoutes();
+    initFlightProgramsGrid();
+
   } catch (e) {
     console.error('Erro ao carregar preferências:', e);
   }
@@ -351,6 +515,8 @@ async function savePreferences() {
     monitored_programs:    [...allPrograms],
     transfer_pairs:        transferPairs,
     accumulation_programs: [...selectedAccum],
+    flight_routes:         flightRoutes,
+    flight_programs:       flightPrograms,
   };
 
   try {
@@ -383,6 +549,8 @@ function showPrefsStep(email) {
   document.getElementById('step-email').style.display = 'none';
   document.getElementById('step-prefs').style.display = 'block';
   document.getElementById('user-email-display').textContent = email;
+  initFlightProgramsGrid();
+  populateAirportDatalist();
 }
 
 /* ── Reset (go back to step 1) ── */
@@ -403,7 +571,10 @@ function resetEmail() {
   selectedAccum  = new Set();
   selectedSources.clear();
   selectedDests.clear();
+  flightRoutes = [];
+  flightPrograms = [];
   renderPairs();
+  renderFlightRoutes();
   document.querySelectorAll('.prog-chip').forEach(c => c.classList.remove('selected'));
   const addRow = document.getElementById('pair-add-row');
   if (addRow) addRow.style.display = 'none';
