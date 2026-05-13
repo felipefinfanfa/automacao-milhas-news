@@ -33,9 +33,7 @@ def _prefs(
 ) -> UserPreferencesData:
     return UserPreferencesData(
         user_id="user-xyz",
-        flight_routes=[
-            FlightRoute(origin_iata=o, destination_iata=d) for o, d in (routes or [])
-        ],
+        flight_routes=[FlightRoute(origin_iata=o, destination_iata=d) for o, d in (routes or [])],
         flight_programs=programs or [],
     )
 
@@ -49,7 +47,9 @@ def test_match_exact_route():
 
 
 def test_no_match_wrong_destination():
-    assert matches_preferences(_flight_promo("GRU", "CDG"), _prefs(routes=[("GRU", "MIA")])) is False
+    assert (
+        matches_preferences(_flight_promo("GRU", "CDG"), _prefs(routes=[("GRU", "MIA")])) is False
+    )
 
 
 def test_match_wildcard_destination():
@@ -63,7 +63,9 @@ def test_match_wildcard_origin():
 
 
 def test_no_match_wrong_origin():
-    assert matches_preferences(_flight_promo("GRU", "MIA"), _prefs(routes=[("BSB", "MIA")])) is False
+    assert (
+        matches_preferences(_flight_promo("GRU", "MIA"), _prefs(routes=[("BSB", "MIA")])) is False
+    )
 
 
 def test_match_by_program_only():

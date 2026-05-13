@@ -133,6 +133,7 @@ class handler(BaseHTTPRequestHandler):
 
             if send_confirmation:
                 from src.pipeline.dispatcher import dispatch_confirmation
+
                 dispatch_confirmation(
                     user_id=uid,
                     user_email=email,

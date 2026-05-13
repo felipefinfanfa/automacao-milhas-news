@@ -441,7 +441,7 @@ def _make_promotion(
         origin_iata, destination_iata = _extract_route(full_text)
 
     # ends_at is always set at this point (gate above).
-    fp_date = ends_at.date().isoformat()  # type: ignore[union-attr]
+    fp_date = ends_at.date().isoformat()
 
     if promo_type == "flight_award":
         fp = _fingerprint([origin_iata or "", destination_iata or "", "flight_award", fp_date])
