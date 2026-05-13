@@ -110,6 +110,7 @@ class handler(BaseHTTPRequestHandler):
                     for p in (row.transfer_pairs or [])
                     if "source" in p and "dest" in p
                 ]
+                user_name = row.name
 
             if send_confirmation:
                 from src.pipeline.dispatcher import dispatch_confirmation
@@ -119,6 +120,7 @@ class handler(BaseHTTPRequestHandler):
                     unsubscribe_token=token,
                     transfer_pairs=pair_objs,
                     accumulation_programs=acc_programs,
+                    name=user_name,
                 )
 
             _json_response(self, 200, result)

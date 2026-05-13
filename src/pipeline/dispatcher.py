@@ -13,6 +13,7 @@ from datetime import UTC, datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
@@ -148,14 +149,22 @@ def dispatch_confirmation(
     unsubscribe_token: str | None,
     transfer_pairs: list[Any],
     accumulation_programs: list[str],
+    name: str | None = None,
 ) -> bool:
     """Sends confirmation email after user saves preferences."""
     unsubscribe_url, manage_url = _build_email_urls(user_id, unsubscribe_token)
+    user = SimpleNamespace(
+        name=name,
+        monitored_programs=accumulation_programs,
+        transfer_pairs=transfer_pairs,
+        unsubscribe_token=unsubscribe_token,
+    )
     html = _render_template(
         "confirmation.html",
         {
             "email_title": "Preferências salvas — Radar de Milhas",
             "header_title": 'Prefer&ecirc;ncias <span style="color:#0891b2">Salvas</span>',
+            "user": user,
             "transfer_pairs": transfer_pairs,
             "accumulation_programs": accumulation_programs,
             "unsubscribe_url": unsubscribe_url,
