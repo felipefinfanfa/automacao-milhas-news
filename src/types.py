@@ -7,7 +7,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
-PromoType = Literal["transfer_bonus", "points_purchase", "other"]
+PromoType = Literal["transfer_bonus", "points_purchase", "flight_award", "other"]
 SourceType = Literal[
     "direct_scraper",
     "hash_diff",
@@ -51,11 +51,20 @@ class PromotionData(BaseModel):
     cpf_limit: str | None = None
     confidence: float = 0.8
     raw_data: dict[str, Any] = Field(default_factory=dict)
+    # flight_award fields
+    origin_iata: str | None = None
+    destination_iata: str | None = None
+    miles_count: int | None = None
 
 
 class TransferPair(BaseModel):
     source: str
     dest: str
+
+
+class FlightRoute(BaseModel):
+    origin_iata: str | None = None
+    destination_iata: str | None = None
 
 
 class UserPreferencesData(BaseModel):
@@ -67,3 +76,8 @@ class UserPreferencesData(BaseModel):
     monitored_programs: list[str] = Field(default_factory=list)
     transfer_pairs: list[TransferPair] = Field(default_factory=list)
     accumulation_programs: list[str] = Field(default_factory=list)
+    flight_routes: list[FlightRoute] = Field(default_factory=list)
+    flight_programs: list[str] = Field(default_factory=list)
+
+
+UserPreferencesData.model_rebuild()
