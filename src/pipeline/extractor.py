@@ -16,6 +16,7 @@ from typing import Any
 
 from bs4 import BeautifulSoup
 
+from src.config.airports import CITY_TO_IATA
 from src.types import PromotionData, RawSignal
 
 logger = logging.getLogger(__name__)
@@ -279,6 +280,39 @@ _TRANSFER_DIRECTION_RE = re.compile(
     re.I,
 )
 
+_FLIGHT_AWARD_RE = re.compile(
+    r"voos?\s+para\b"
+    r"|voos?\s+saindo\b"
+    r"|passagem\s+pr[eê]mio"
+    r"|emiss[ãa]o\s+com"
+    r"|emitir\s+com"
+    r"|[\d\.,]+\s*(mil\s+)?(milhas|pontos)\s+(o\s+trecho|por\s+trecho)"
+    r"|trechos?\s+a\s+partir\s+de\s+[\d\.,]+\s*(mil\s+)?(milhas|pontos)"
+    r"|[\d\.,]+\s+mil\s+milhas\b"
+    r"|[\d\.,]+\s+mil\s+pontos\b"
+    r"|compartilhando\s+emiss[õo]es",
+    re.I,
+)
+
+_MILES_COUNT_RE = re.compile(
+    r"([\d\.,]+)\s*(mil\s+)?(milhas|pontos)\b",
+    re.I,
+)
+
+_ROUTE_FROM_RE = re.compile(
+    r"(?:de|saindo\s+de|partindo\s+de)\s+"
+    r"([a-zà-ü\s]{3,30}?)"
+    r"(?=\s+para\b|\s+com\b|\s+por\b|,|\.|$)",
+    re.I,
+)
+
+_ROUTE_TO_RE = re.compile(
+    r"(?:para|at[eé]|com\s+destino\s+a)\s+"
+    r"([a-zà-ü\s]{3,30}?)"
+    r"(?=\s+(?:com|por|a\s+partir|em|via)\b|,|\.|$|\s*\Z)",
+    re.I,
+)
+
 
 def _find_transfer_direction(text: str) -> tuple[str | None, str | None]:
     """Detecta direção de transferência por padrão 'X para Y'."""
@@ -307,6 +341,49 @@ def _find_programs(text: str) -> list[str]:
             seen.add(val)
             result.append(val)
     return result
+
+
+def _extract_miles_count(text: str) -> int | None:
+    """Extrai a maior contagem de milhas/pontos do texto. Ignora valores < 1000."""
+    values: list[int] = []
+    for m in _MILES_COUNT_RE.finditer(text):
+        raw = m.group(1).replace(".", "").replace(",", "")
+        is_mil = bool(m.group(2))
+        try:
+            val = int(raw)
+            if is_mil:
+                val *= 1000
+            if val >= 1000:
+                values.append(val)
+        except ValueError:
+            continue
+    return max(values) if values else None
+
+
+def _extract_route(text: str) -> tuple[str | None, str | None]:
+    """Extrai (origin_iata, destination_iata) do texto via regex + CITY_TO_IATA."""
+
+    def _lookup(city_raw: str) -> str | None:
+        city = city_raw.strip().lower()
+        if city in CITY_TO_IATA:
+            return CITY_TO_IATA[city]
+        for key, iata in CITY_TO_IATA.items():
+            if city.startswith(key) or key.startswith(city[:8]):
+                return iata
+        return None
+
+    origin_iata: str | None = None
+    destination_iata: str | None = None
+
+    m_from = _ROUTE_FROM_RE.search(text)
+    if m_from:
+        origin_iata = _lookup(m_from.group(1))
+
+    m_to = _ROUTE_TO_RE.search(text)
+    if m_to:
+        destination_iata = _lookup(m_to.group(1))
+
+    return origin_iata, destination_iata
 
 
 def _make_promotion(
@@ -346,21 +423,38 @@ def _make_promotion(
         else:
             origin, dest = source_program, None
 
-    promo_type = "transfer_bonus" if bonus_pct else "other"
+    # transfer_bonus takes priority (needs explicit %).
+    # flight_award second: no % bonus but flight patterns detected.
+    if bonus_pct:
+        promo_type = "transfer_bonus"
+    elif _FLIGHT_AWARD_RE.search(full_text):
+        promo_type = "flight_award"
+    else:
+        promo_type = "other"
+
+    # Extract flight-specific fields
+    origin_iata: str | None = None
+    destination_iata: str | None = None
+    miles_count: int | None = None
+    if promo_type == "flight_award":
+        miles_count = _extract_miles_count(full_text)
+        origin_iata, destination_iata = _extract_route(full_text)
+
     # ends_at is always set at this point (gate above).
-    # Using it (not the source URL) ensures the same promo discovered on
-    # multiple news sites collapses to a single fingerprint.
     fp_date = ends_at.date().isoformat()  # type: ignore[union-attr]
 
-    fp = _fingerprint(
-        [
-            origin,
-            dest or "",
-            str(int(bonus_pct)) if bonus_pct else "",
-            promo_type,
-            fp_date,
-        ]
-    )
+    if promo_type == "flight_award":
+        fp = _fingerprint([origin_iata or "", destination_iata or "", "flight_award", fp_date])
+    else:
+        fp = _fingerprint(
+            [
+                origin,
+                dest or "",
+                str(int(bonus_pct)) if bonus_pct else "",
+                promo_type,
+                fp_date,
+            ]
+        )
 
     return PromotionData(
         fingerprint=fp,
@@ -375,6 +469,9 @@ def _make_promotion(
         starts_at=starts_at,
         ends_at=ends_at,
         confidence=min(1.0, confidence),
+        origin_iata=origin_iata,
+        destination_iata=destination_iata,
+        miles_count=miles_count,
         raw_data={
             "source_url": signal.source_url,
             "source_type": signal.source_type,
