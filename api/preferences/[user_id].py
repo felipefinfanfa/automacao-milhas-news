@@ -5,7 +5,7 @@ import uuid
 from http.server import BaseHTTPRequestHandler
 from typing import Any
 
-from src.api.schemas.preferences import UserPreferencesIn
+from src.api.schemas.preferences import UserPreferencesIn, UserPreferencesOut
 from src.config.settings import settings
 from src.db.models import UserPreferences, create_engine_from_url, get_session_factory
 
@@ -24,17 +24,17 @@ def _json_response(handler: Any, status: int, data: dict) -> None:
 
 
 def _row_to_dict(row: Any) -> dict:
-    return {
-        "user_id": str(row.user_id),
-        "email": row.email,
-        "name": row.name,
-        "phone": row.phone,
-        "monitored_programs": row.monitored_programs or [],
-        "transfer_pairs": row.transfer_pairs or [],
-        "accumulation_programs": row.accumulation_programs or [],
-        "flight_routes": row.flight_routes or [],
-        "flight_programs": row.flight_programs or [],
-    }
+    return UserPreferencesOut(
+        user_id=str(row.user_id),
+        email=row.email,
+        name=row.name,
+        phone=row.phone,
+        monitored_programs=row.monitored_programs or [],
+        transfer_pairs=row.transfer_pairs or [],
+        accumulation_programs=row.accumulation_programs or [],
+        flight_routes=row.flight_routes or [],
+        flight_programs=row.flight_programs or [],
+    ).model_dump()
 
 
 def _parse_user_id(path: str) -> str:

@@ -308,6 +308,7 @@ _ROUTE_FROM_RE = re.compile(
 
 _ROUTE_TO_RE = re.compile(
     r"(?:para|at[eé]|com\s+destino\s+a)\s+"
+    r"(?:o\s+|a\s+|os\s+|as\s+)?"  # skip articles: "para o Caribe" → skip "o"
     r"([a-zà-ü\s]{3,30}?)"
     r"(?=\s+(?:com|por|a\s+partir|em|via)\b|,|\.|$|\s*\Z)",
     re.I,
@@ -368,7 +369,7 @@ def _extract_route(text: str) -> tuple[str | None, str | None]:
         if city in CITY_TO_IATA:
             return CITY_TO_IATA[city]
         for key, iata in CITY_TO_IATA.items():
-            if city.startswith(key) or key.startswith(city[:8]):
+            if city.startswith(key):
                 return iata
         return None
 

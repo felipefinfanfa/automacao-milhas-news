@@ -78,6 +78,3 @@ class UserPreferencesData(BaseModel):
     accumulation_programs: list[str] = Field(default_factory=list)
     flight_routes: list[FlightRoute] = Field(default_factory=list)
     flight_programs: list[str] = Field(default_factory=list)
-
-
-UserPreferencesData.model_rebuild()

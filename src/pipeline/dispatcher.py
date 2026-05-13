@@ -210,6 +210,7 @@ def dispatch_day1(
         logger.debug("Nenhuma promo nova para user=%s", user_id[:8])
         return False
 
+    # bonus_percent is None for flight_award/other — they sort to 0 and appear after transfer_bonus
     sorted_promos = sorted(promos_to_send, key=lambda p: p.bonus_percent or 0, reverse=True)
     transfer_promos = [p for p in sorted_promos if p.promo_type == "transfer_bonus"]
     flight_promos = [p for p in sorted_promos if p.promo_type == "flight_award"]
