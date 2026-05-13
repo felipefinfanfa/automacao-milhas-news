@@ -28,3 +28,4 @@ portfolio/
 .claude/settings.local.json
 .claude/skills/
 SKILL.md
+.vercel

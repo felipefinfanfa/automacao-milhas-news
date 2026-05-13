@@ -1,75 +1,212 @@
-{% extends "partials/base.html" %}
-{% block body %}
+{# ─────────────────────────────────────────────────────────────
+   confirmation.html — Radar de Milhas registration confirmation
+   Context: user (UserPreferencesData), preferences_url (str),
+            unsubscribe_url (str)
+   ───────────────────────────────────────────────────────────── #}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <meta name="supported-color-schemes" content="dark">
+  <title>Bem-vindo ao Radar de Milhas</title>
+  <style>
+    :root { color-scheme: dark; }
+    @media (prefers-color-scheme: light) {
+      body { background-color: #01040A !important; }
+    }
 
-{% set _pl = {'smiles':'Smiles','latam':'LATAM Pass','azul':'Azul','livelo':'Livelo','esfera':'Esfera','iupp':'Iupp'} %}
-{% set _pc = {'smiles':'#f97316','latam':'#0ea5e9','azul':'#2563eb','livelo':'#7c3aed','esfera':'#dc2626','iupp':'#d97706'} %}
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #01040A;
+      font-family: 'Geist', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
 
-{# ─── Bloco de sucesso ─── #}
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px">
-<tr><td bgcolor="#0D1A3A" style="background:#0D1A3A;border:1px solid #1C60DA;border-radius:12px;padding:20px 22px">
+    /* Mobile */
+    @media screen and (max-width: 640px) {
+      .email-wrapper { padding: 0 !important; }
+      .email-body { border-radius: 0 !important; border-left: none !important; border-right: none !important; }
+      .section-pad { padding-left: 24px !important; padding-right: 24px !important; }
+      .feature-row { display: block !important; }
+      .feature-cell { display: block !important; width: 100% !important; padding-right: 0 !important; padding-bottom: 16px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#01040A;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="background-color:#01040A;">
+    <tr>
+      <td align="center" style="padding:32px 16px 48px;">
+        <!--[if mso]>
+        <table width="600" cellpadding="0" cellspacing="0" border="0"><tr><td>
+        <![endif]-->
+        <table width="600" cellpadding="0" cellspacing="0" border="0" role="presentation" style="max-width:600px;width:100%;background-color:#04080F;border-radius:16px;border:1px solid rgba(206,212,242,0.10);overflow:hidden;">
 
-  <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px"><tr>
-    <td width="38" height="38" bgcolor="#102048" align="center" valign="middle"
-        style="background:#102048;border:1px solid #1C60DA;border-radius:9px;font-size:18px;color:#7EB0FF;font-family:Arial,sans-serif">
-      &#10003;
-    </td>
-    <td valign="middle" style="padding-left:13px">
-      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:16px;font-weight:700;color:#CED4F2;letter-spacing:-0.3px">Prefer&#234;ncias salvas</div>
-      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:12px;color:#2B3A6E;margin-top:3px">Radar de Milhas est&#225; monitorando para voc&#234;</div>
-    </td>
-  </tr></table>
+          {# ── Hero header with glow ── #}
+          <tr>
+            <td style="background:linear-gradient(180deg,#0B1328 0%,#060D1E 60%,#04080F 100%);padding:48px 40px 40px;text-align:center;border-bottom:1px solid rgba(206,212,242,0.07);">
 
-  <p style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:14px;color:#A5ACCD;margin:0;line-height:1.75">
-    Assim que detectarmos uma promo&#231;&#227;o compatível com seu perfil, voc&#234; recebe
-    um alerta por e-mail imediatamente.
-  </p>
+              {# F lettermark #}
+              <div style="margin-bottom:24px;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 67 90" width="36" height="48" style="display:block;margin:0 auto;">
+                  <path d="M15.2881 89.4385V53.1934H63.5L65.1807 43.1641H15.2881H3.16406V53.1934V89.4385H15.2881Z" fill="#1C60DA"/>
+                  <path d="M66.7041 0H0L3.16406 9.90234H15.2881H63.5L66.7041 0Z" fill="#CED4F2"/>
+                </svg>
+              </div>
 
-</td></tr>
-</table>
+              <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#1C60DA;margin-bottom:12px;">
+                Radar de Milhas
+              </div>
 
-{# ─── O que monitoramos ─── #}
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:22px">
+              <div style="font-size:28px;font-weight:800;color:#CED4F2;letter-spacing:-0.04em;line-height:1.15;margin-bottom:12px;">
+                Cadastro confirmado
+              </div>
 
-  <tr><td style="padding-bottom:14px">
-    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:15px;font-weight:700;color:#CED4F2;letter-spacing:-0.3px">O que monitoramos para voc&#234;</div>
-  </td></tr>
+              <div style="font-size:15px;color:#707AA9;line-height:1.625;max-width:400px;margin:0 auto;">
+                {% if user.name %}{{ user.name.split()[0] }}, você{% else %}Você{% endif %} receberá um alerta imediato toda vez que detectarmos uma nova promoção nos programas que você monitora.
+              </div>
+            </td>
+          </tr>
 
-  {% if transfer_pairs %}
-  <tr><td style="padding-bottom:14px">
-    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:10px;font-weight:700;color:#2B3A6E;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:10px">B&#212;NUS DE TRANSFER&#202;NCIA</div>
-    {% for pair in transfer_pairs %}
-    <span style="display:inline-block;background:#0B1122;border:1px solid #141E38;border-radius:20px;padding:5px 13px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:12px;font-weight:600;margin:3px 4px 3px 0">
-      <span style="color:{{ _pc.get(pair.source, '#A5ACCD') }}">{{ _pl.get(pair.source, pair.source) }}</span><span style="color:#2B3A6E"> &#8594; </span><span style="color:{{ _pc.get(pair.dest, '#A5ACCD') }}">{{ _pl.get(pair.dest, pair.dest) }}</span>
-    </span>
-    {% endfor %}
-  </td></tr>
-  {% endif %}
+          {# ── How it works ── #}
+          <tr>
+            <td class="section-pad" style="padding:36px 40px 32px;">
+              <div style="font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#455084;margin-bottom:20px;">
+                Como funciona
+              </div>
 
-  {% if accumulation_programs %}
-  <tr><td>
-    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:10px;font-weight:700;color:#2B3A6E;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:10px">AC&#218;MULO DE PONTOS</div>
-    {% for p in accumulation_programs %}
-    <span style="display:inline-block;background:#0B1122;border:1px solid #141E38;border-radius:20px;padding:5px 13px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:12px;font-weight:700;color:{{ _pc.get(p, '#A5ACCD') }};margin:3px 4px 3px 0">{{ _pl.get(p, p) }}</span>
-    {% endfor %}
-  </td></tr>
-  {% endif %}
+              {# Feature 1 #}
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-bottom:16px;">
+                <tr>
+                  <td width="40" valign="top" style="padding-right:16px;">
+                    <div style="width:36px;height:36px;border-radius:10px;background:rgba(28,96,218,0.12);border:1px solid rgba(28,96,218,0.25);display:flex;align-items:center;justify-content:center;">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1C60DA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                      </svg>
+                    </div>
+                  </td>
+                  <td valign="top">
+                    <div style="font-size:14px;font-weight:600;color:#CED4F2;letter-spacing:-0.01em;margin-bottom:3px;">Monitoramento contínuo</div>
+                    <div style="font-size:13px;color:#707AA9;line-height:1.55;">Verificamos Smiles, Azul, LATAM, Livelo e Esfera até 6 vezes por dia em busca de novas promoções.</div>
+                  </td>
+                </tr>
+              </table>
 
-  {% if not transfer_pairs and not accumulation_programs %}
-  <tr><td class="iblk" bgcolor="#0B1122" style="background:#0B1122;border:1px solid #141E38;border-radius:10px;padding:16px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:13px;color:#2B3A6E">
-    Nenhuma prefer&#234;ncia configurada ainda.
-  </td></tr>
-  {% endif %}
+              {# Feature 2 #}
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-bottom:16px;">
+                <tr>
+                  <td width="40" valign="top" style="padding-right:16px;">
+                    <div style="width:36px;height:36px;border-radius:10px;background:rgba(28,96,218,0.12);border:1px solid rgba(28,96,218,0.25);">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1C60DA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:9px;">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.99 14c-1.07-2.68-1.73-5.55-1.93-8.43A2 2 0 0 1 5.05 3.5h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L9.09 11a16 16 0 0 0 5.91 5.91l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+                      </svg>
+                    </div>
+                  </td>
+                  <td valign="top">
+                    <div style="font-size:14px;font-weight:600;color:#CED4F2;letter-spacing:-0.01em;margin-bottom:3px;">Alerta imediato</div>
+                    <div style="font-size:13px;color:#707AA9;line-height:1.55;">Assim que detectamos uma promoção nova, você recebe um email na mesma hora — sem precisar checar os sites.</div>
+                  </td>
+                </tr>
+              </table>
 
-</table>
+              {# Feature 3 #}
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+                <tr>
+                  <td width="40" valign="top" style="padding-right:16px;">
+                    <div style="width:36px;height:36px;border-radius:10px;background:rgba(28,96,218,0.12);border:1px solid rgba(28,96,218,0.25);">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1C60DA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:9px;">
+                        <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                      </svg>
+                    </div>
+                  </td>
+                  <td valign="top">
+                    <div style="font-size:14px;font-weight:600;color:#CED4F2;letter-spacing:-0.01em;margin-bottom:3px;">Personalizado para você</div>
+                    <div style="font-size:13px;color:#707AA9;line-height:1.55;">Só enviamos alertas dos programas e pares de transferência que você selecionou. Sem spam, sem irrelevância.</div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
 
-{# ─── Frequência ─── #}
-<table class="iblk" width="100%" cellpadding="0" cellspacing="0" border="0">
-<tr><td bgcolor="#0B1122" style="background:#0B1122;border:1px solid #141E38;border-radius:10px;padding:15px 18px">
-  <p style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:13px;color:#455084;margin:0;line-height:1.75">
-    Os scans rodam <strong style="color:#CED4F2">6&#215; por dia</strong> (06h, 09h, 12h, 15h, 18h e 21h).
-    Alerta em at&#233; <strong style="color:#CED4F2">1&nbsp;hora</strong> de qualquer promo&#231;&#227;o nova.
-  </p>
-</td></tr>
-</table>
+          {# ── Programs monitored ── #}
+          {% if user.monitored_programs or user.transfer_pairs %}
+          <tr>
+            <td style="padding:0 40px 32px;">
+              <div style="background:#070C18;border:1px solid rgba(206,212,242,0.10);border-radius:14px;box-shadow:inset 0 1px 0 rgba(206,212,242,0.05);padding:20px 22px;">
+                <div style="font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#455084;margin-bottom:14px;">
+                  Seus programas monitorados
+                </div>
+                <div>
+                  {% set all_programs = [] %}
+                  {% for p in user.monitored_programs %}{% set _ = all_programs.append(p) %}{% endfor %}
+                  {% for pair in user.transfer_pairs %}
+                    {% if pair.source not in all_programs %}{% set _ = all_programs.append(pair.source) %}{% endif %}
+                    {% if pair.dest not in all_programs %}{% set _ = all_programs.append(pair.dest) %}{% endif %}
+                  {% endfor %}
+                  {% for prog in all_programs %}
+                    {% set pk = prog|lower %}
+                    {% if 'smiles' in pk %}
+                      {% set pc = '#FFB347' %}{% set pb = 'rgba(255,140,0,0.15)' %}{% set pbo = 'rgba(255,140,0,0.30)' %}
+                    {% elif 'azul' in pk %}
+                      {% set pc = '#66AAFF' %}{% set pb = 'rgba(0,102,204,0.15)' %}{% set pbo = 'rgba(0,102,204,0.30)' %}
+                    {% elif 'latam' in pk %}
+                      {% set pc = '#FF6680' %}{% set pb = 'rgba(212,0,45,0.15)' %}{% set pbo = 'rgba(212,0,45,0.30)' %}
+                    {% elif 'livelo' in pk %}
+                      {% set pc = '#BB88FF' %}{% set pb = 'rgba(123,47,190,0.15)' %}{% set pbo = 'rgba(123,47,190,0.30)' %}
+                    {% elif 'esfera' in pk %}
+                      {% set pc = '#44CC99' %}{% set pb = 'rgba(0,168,120,0.15)' %}{% set pbo = 'rgba(0,168,120,0.30)' %}
+                    {% else %}
+                      {% set pc = '#7EB0FF' %}{% set pb = 'rgba(28,96,218,0.15)' %}{% set pbo = 'rgba(28,96,218,0.30)' %}
+                    {% endif %}
+                    <span style="display:inline-block;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:4px 10px;border-radius:9999px;background:{{ pb }};border:1px solid {{ pbo }};color:{{ pc }};margin:0 5px 6px 0;">{{ prog }}</span>
+                  {% endfor %}
+                </div>
+              </div>
+            </td>
+          </tr>
+          {% endif %}
 
-{% endblock %}
+          {# ── CTA ── #}
+          <tr>
+            <td style="padding:0 40px 36px;text-align:center;">
+              <a href="{{ preferences_url }}" style="display:inline-block;background:#1C60DA;color:#ffffff;font-family:'Geist','SF Pro Display',-apple-system,sans-serif;font-size:14px;font-weight:600;padding:12px 28px;border-radius:12px;text-decoration:none;letter-spacing:0.01em;">
+                Editar preferências
+              </a>
+            </td>
+          </tr>
+
+          {# ── Divider ── #}
+          <tr>
+            <td>
+              <div style="height:1px;background:rgba(206,212,242,0.07);margin:0 40px;"></div>
+            </td>
+          </tr>
+
+          {# ── Footer ── #}
+          <tr>
+            <td style="padding:28px 40px;text-align:center;">
+              {# Wordmark #}
+              <div style="margin-bottom:16px;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 67 90" width="20" height="27" style="display:inline-block;vertical-align:middle;margin-right:8px;opacity:0.4;">
+                  <path d="M15.2881 89.4385V53.1934H63.5L65.1807 43.1641H15.2881H3.16406V53.1934V89.4385H15.2881Z" fill="#CED4F2"/>
+                  <path d="M66.7041 0H0L3.16406 9.90234H15.2881H63.5L66.7041 0Z" fill="#CED4F2"/>
+                </svg><!--
+                --><span style="display:inline-block;vertical-align:middle;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#3D4870;">Radar de Milhas</span>
+              </div>
+
+              <div style="font-size:12px;color:#455084;line-height:1.7;">
+                Você está recebendo este email porque se cadastrou no Radar de Milhas.<br>
+                <a href="{{ unsubscribe_url }}" style="color:#455084;text-decoration:underline;">Cancelar inscrição</a>
+              </div>
+            </td>
+          </tr>
+
+        </table>
+        <!--[if mso]></td></tr></table><![endif]-->
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

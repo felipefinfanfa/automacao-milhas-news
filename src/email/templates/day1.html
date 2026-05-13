@@ -1,54 +1,493 @@
-{% extends "partials/base.html" %}
-{% block body %}
+{# ─────────────────────────────────────────────────────────────
+   day1.html — Radar de Milhas promotion alert email
+   Context: user (UserPreferencesData), promotions (list[dict]),
+            unsubscribe_url (str)
+   ───────────────────────────────────────────────────────────── #}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <meta name="supported-color-schemes" content="dark">
+  <title>Nova promoção detectada — Radar de Milhas</title>
+  <style>
+    /* Force dark mode — brand always renders dark */
+    :root { color-scheme: dark; }
+    @media (prefers-color-scheme: light) {
+      body, .email-body { background-color: #01040A !important; }
+    }
 
-{% set _tp = transfer_promos if transfer_promos is defined else [] %}
-{% set _ap = accum_promos    if accum_promos    is defined else [] %}
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #01040A;
+      font-family: 'Geist', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
 
-{# ─── Transferências ─── #}
-{% if _tp %}
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px">
-<tr><td style="padding-bottom:13px">
-  <table cellpadding="0" cellspacing="0" border="0"><tr>
-    <td valign="middle" style="padding-right:10px">
-      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:10px;font-weight:700;color:#1C60DA;letter-spacing:2.5px;text-transform:uppercase">TRANSFER&#202;NCIAS</div>
-      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:12px;color:#2B3A6E;margin-top:2px">
-        {{ _tp|length }}&nbsp;promo&#231;&#227;o{% if _tp|length > 1 %}&#245;es{% endif %} encontrada{% if _tp|length > 1 %}s{% endif %}
-      </div>
-    </td>
-  </tr></table>
-</td></tr>
-<tr><td>
-  {% for promo in _tp %}{% include "partials/_promo_card.html" %}{% endfor %}
-</td></tr>
-</table>
-{% endif %}
+    .email-wrapper {
+      width: 100%;
+      background-color: #01040A;
+      padding: 32px 0 48px;
+    }
 
-{# ─── Acúmulo ─── #}
-{% if _ap %}
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px">
-<tr><td style="padding-bottom:13px">
-  <table cellpadding="0" cellspacing="0" border="0"><tr>
-    <td valign="middle" style="padding-right:10px">
-      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:10px;font-weight:700;color:#707AA9;letter-spacing:2.5px;text-transform:uppercase">AC&#218;MULO</div>
-      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:12px;color:#2B3A6E;margin-top:2px">
-        {{ _ap|length }}&nbsp;promo&#231;&#227;o{% if _ap|length > 1 %}&#245;es{% endif %} encontrada{% if _ap|length > 1 %}s{% endif %}
-      </div>
-    </td>
-  </tr></table>
-</td></tr>
-<tr><td>
-  {% for promo in _ap %}{% include "partials/_promo_card.html" %}{% endfor %}
-</td></tr>
-</table>
-{% endif %}
+    .email-body {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #04080F;
+      border-radius: 16px;
+      border: 1px solid rgba(206, 212, 242, 0.10);
+      overflow: hidden;
+    }
 
-{# ─── Vazio ─── #}
-{% if not _tp and not _ap %}
-<table class="iblk" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px">
-<tr><td bgcolor="#0B1122" style="background:#0B1122;border:1px solid #141E38;border-radius:10px;padding:22px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:13px;color:#2B3A6E">
-  Nenhuma promo&#231;&#227;o nova desde o &#250;ltimo scan.
-</td></tr>
-</table>
-{% endif %}
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(180deg, #0B1328 0%, #04080F 100%);
+      padding: 36px 40px 32px;
+      border-bottom: 1px solid rgba(206, 212, 242, 0.08);
+      text-align: center;
+    }
 
-{% endblock %}
+    .header-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+    }
+
+    .header-brand {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      color: #707AA9;
+      margin-top: 12px;
+    }
+
+    /* ── Intro ── */
+    .intro {
+      padding: 36px 40px 28px;
+    }
+
+    .intro-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      color: #1C60DA;
+      margin-bottom: 10px;
+    }
+
+    .intro-heading {
+      font-size: 22px;
+      font-weight: 700;
+      color: #CED4F2;
+      letter-spacing: -0.03em;
+      line-height: 1.25;
+      margin-bottom: 10px;
+    }
+
+    .intro-body {
+      font-size: 14px;
+      color: #707AA9;
+      line-height: 1.625;
+    }
+
+    /* ── Promotion cards ── */
+    .cards {
+      padding: 0 40px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card {
+      background: #070C18;
+      border: 1px solid rgba(206, 212, 242, 0.10);
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(1, 4, 10, 0.7), inset 0 1px 0 rgba(206, 212, 242, 0.05);
+      padding: 20px 22px;
+    }
+
+    .card-highlight {
+      background: linear-gradient(135deg, rgba(28, 96, 218, 0.10) 0%, #070C18 100%);
+      border-color: rgba(28, 96, 218, 0.22);
+    }
+
+    /* Program pills */
+    .pills {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      border: 1px solid;
+    }
+
+    .pill-arrow {
+      font-size: 13px;
+      color: #455084;
+    }
+
+    /* Stat (bonus pct) */
+    .card-stat {
+      margin-bottom: 12px;
+    }
+
+    .stat-value {
+      font-size: 40px;
+      font-weight: 800;
+      color: #1C60DA;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .stat-unit {
+      font-size: 20px;
+      font-weight: 700;
+      color: #455084;
+      letter-spacing: -0.02em;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #707AA9;
+      margin-top: 2px;
+    }
+
+    /* Meta */
+    .card-meta {
+      font-size: 13px;
+      color: #707AA9;
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    .card-meta-date {
+      color: #A5ACCD;
+      font-weight: 500;
+    }
+
+    /* Badges */
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 9999px;
+      letter-spacing: 0.03em;
+    }
+
+    .badge-warning {
+      background: rgba(245, 158, 11, 0.12);
+      color: #FCD34D;
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+
+    .badge-info {
+      background: rgba(28, 96, 218, 0.12);
+      color: #7EB0FF;
+      border: 1px solid rgba(28, 96, 218, 0.25);
+    }
+
+    /* CTA button */
+    .btn-cta {
+      display: inline-block;
+      background: #1C60DA;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 9px 20px;
+      border-radius: 10px;
+      text-decoration: none;
+      letter-spacing: 0.01em;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: rgba(206, 212, 242, 0.07);
+      margin: 0 40px;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      padding: 28px 40px;
+      text-align: center;
+    }
+
+    .footer-text {
+      font-size: 12px;
+      color: #455084;
+      line-height: 1.6;
+    }
+
+    .footer-link {
+      color: #455084;
+      text-decoration: underline;
+    }
+
+    .footer-link:hover {
+      color: #707AA9;
+    }
+
+    /* Mobile */
+    @media screen and (max-width: 640px) {
+      .email-wrapper { padding: 0; }
+      .email-body { border-radius: 0; border-left: none; border-right: none; }
+      .header, .intro, .cards, .footer { padding-left: 24px; padding-right: 24px; }
+      .divider { margin: 0 24px; }
+      .cards { padding-bottom: 24px; }
+      .stat-value { font-size: 32px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="email-wrapper">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+      <tr>
+        <td align="center" style="padding: 32px 16px 48px;">
+          <!--[if mso]>
+          <table width="600" cellpadding="0" cellspacing="0" border="0"><tr><td>
+          <![endif]-->
+          <table class="email-body" width="600" cellpadding="0" cellspacing="0" border="0" role="presentation" style="max-width:600px;width:100%;background-color:#04080F;border-radius:16px;border:1px solid rgba(206,212,242,0.10);overflow:hidden;">
+
+            {# ── Header ── #}
+            <tr>
+              <td class="header" style="background:linear-gradient(180deg,#0B1328 0%,#04080F 100%);padding:36px 40px 32px;border-bottom:1px solid rgba(206,212,242,0.08);text-align:center;">
+                <!--[if mso]><table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center"><![endif]-->
+
+                {# F lettermark + wordmark #}
+                <a href="https://radardemilhas.com.br" style="display:inline-block;text-decoration:none;">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 67 90" width="28" height="38" style="display:inline-block;vertical-align:middle;margin-right:12px;">
+                    <path d="M15.2881 89.4385V53.1934H63.5L65.1807 43.1641H15.2881H3.16406V53.1934V89.4385H15.2881Z" fill="#CED4F2"/>
+                    <path d="M66.7041 0H0L3.16406 9.90234H15.2881H63.5L66.7041 0Z" fill="#CED4F2"/>
+                  </svg><!--
+                  --><span style="display:inline-block;vertical-align:middle;font-family:'Geist','SF Pro Display',-apple-system,sans-serif;font-size:15px;font-weight:700;color:#CED4F2;letter-spacing:0.04em;text-transform:uppercase;">Radar de Milhas</span>
+                </a>
+
+                <!--[if mso]></td></tr></table><![endif]-->
+                <div class="header-brand" style="font-size:11px;font-weight:600;letter-spacing:0.10em;text-transform:uppercase;color:#455084;margin-top:14px;">
+                  Monitoramento de promoções
+                </div>
+              </td>
+            </tr>
+
+            {# ── Intro ── #}
+            <tr>
+              <td class="intro" style="padding:36px 40px 24px;">
+                <div class="intro-eyebrow" style="font-size:11px;font-weight:600;letter-spacing:0.10em;text-transform:uppercase;color:#1C60DA;margin-bottom:10px;">
+                  Nova promoção detectada
+                </div>
+                <div class="intro-heading" style="font-size:22px;font-weight:700;color:#CED4F2;letter-spacing:-0.03em;line-height:1.25;margin-bottom:10px;">
+                  {% if user.name %}{{ user.name.split()[0] }}, {% endif %}encontramos {{ promotions|length }}
+                  {%- if promotions|length == 1 %} promoção ativa{% else %} promoções ativas{% endif %}
+                </div>
+                <div class="intro-body" style="font-size:14px;color:#707AA9;line-height:1.625;">
+                  {% if promotions|length == 1 %}
+                    Detectamos uma nova promoção que corresponde às suas preferências. Confira os detalhes abaixo.
+                  {% else %}
+                    Detectamos {{ promotions|length }} novas promoções que correspondem às suas preferências. Confira os detalhes abaixo.
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+
+            {# ── Promotion cards ── #}
+            <tr>
+              <td style="padding: 0 40px 32px;">
+                {% for promo in promotions %}
+
+                {# Program color mapping #}
+                {% set prog_key = (promo.origin_program or promo.source_program or '')|lower %}
+                {% set dest_key = (promo.destination_program or '')|lower %}
+
+                {% if 'smiles' in prog_key %}
+                  {% set pill_bg = 'rgba(255,140,0,0.15)' %}
+                  {% set pill_border = 'rgba(255,140,0,0.40)' %}
+                  {% set pill_color = '#FFB347' %}
+                {% elif 'azul' in prog_key %}
+                  {% set pill_bg = 'rgba(0,102,204,0.15)' %}
+                  {% set pill_border = 'rgba(0,102,204,0.40)' %}
+                  {% set pill_color = '#66AAFF' %}
+                {% elif 'latam' in prog_key %}
+                  {% set pill_bg = 'rgba(212,0,45,0.15)' %}
+                  {% set pill_border = 'rgba(212,0,45,0.40)' %}
+                  {% set pill_color = '#FF6680' %}
+                {% elif 'livelo' in prog_key %}
+                  {% set pill_bg = 'rgba(123,47,190,0.15)' %}
+                  {% set pill_border = 'rgba(123,47,190,0.40)' %}
+                  {% set pill_color = '#BB88FF' %}
+                {% elif 'esfera' in prog_key %}
+                  {% set pill_bg = 'rgba(0,168,120,0.15)' %}
+                  {% set pill_border = 'rgba(0,168,120,0.40)' %}
+                  {% set pill_color = '#44CC99' %}
+                {% else %}
+                  {% set pill_bg = 'rgba(28,96,218,0.15)' %}
+                  {% set pill_border = 'rgba(28,96,218,0.40)' %}
+                  {% set pill_color = '#7EB0FF' %}
+                {% endif %}
+
+                {% if 'smiles' in dest_key %}
+                  {% set dest_bg = 'rgba(255,140,0,0.15)' %}
+                  {% set dest_border = 'rgba(255,140,0,0.40)' %}
+                  {% set dest_color = '#FFB347' %}
+                {% elif 'azul' in dest_key %}
+                  {% set dest_bg = 'rgba(0,102,204,0.15)' %}
+                  {% set dest_border = 'rgba(0,102,204,0.40)' %}
+                  {% set dest_color = '#66AAFF' %}
+                {% elif 'latam' in dest_key %}
+                  {% set dest_bg = 'rgba(212,0,45,0.15)' %}
+                  {% set dest_border = 'rgba(212,0,45,0.40)' %}
+                  {% set dest_color = '#FF6680' %}
+                {% elif 'livelo' in dest_key %}
+                  {% set dest_bg = 'rgba(123,47,190,0.15)' %}
+                  {% set dest_border = 'rgba(123,47,190,0.40)' %}
+                  {% set dest_color = '#BB88FF' %}
+                {% elif 'esfera' in dest_key %}
+                  {% set dest_bg = 'rgba(0,168,120,0.15)' %}
+                  {% set dest_border = 'rgba(0,168,120,0.40)' %}
+                  {% set dest_color = '#44CC99' %}
+                {% else %}
+                  {% set dest_bg = 'rgba(28,96,218,0.15)' %}
+                  {% set dest_border = 'rgba(28,96,218,0.40)' %}
+                  {% set dest_color = '#7EB0FF' %}
+                {% endif %}
+
+                <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation"
+                  style="margin-top:{% if loop.first %}0{% else %}14px{% endif %};background-color:#070C18;border:1px solid rgba(206,212,242,0.10);border-radius:14px;box-shadow:0 2px 12px rgba(1,4,10,0.7),inset 0 1px 0 rgba(206,212,242,0.05);overflow:hidden;{% if promo.bonus_percent and promo.bonus_percent >= 80 %}background:linear-gradient(135deg,rgba(28,96,218,0.08) 0%,#070C18 100%);border-color:rgba(28,96,218,0.20);{% endif %}">
+                  <tr>
+                    <td style="padding:20px 22px;">
+
+                      {# Program pills #}
+                      <div style="margin-bottom:14px;">
+                        <span style="display:inline-block;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:4px 10px;border-radius:9999px;background:{{ pill_bg }};border:1px solid {{ pill_border }};color:{{ pill_color }};">
+                          {{ promo.origin_program or promo.source_program }}
+                        </span>
+                        {% if promo.promo_type == 'transfer_bonus' and promo.destination_program %}
+                          <span style="display:inline-block;font-size:13px;color:#455084;margin:0 4px;">&#8594;</span>
+                          <span style="display:inline-block;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:4px 10px;border-radius:9999px;background:{{ dest_bg }};border:1px solid {{ dest_border }};color:{{ dest_color }};">
+                            {{ promo.destination_program }}
+                          </span>
+                        {% endif %}
+                        <span style="display:inline-block;font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:3px 8px;border-radius:6px;background:rgba(206,212,242,0.07);border:1px solid rgba(206,212,242,0.12);color:#707AA9;margin-left:6px;vertical-align:middle;">
+                          {% if promo.promo_type == 'transfer_bonus' %}Transferência{% elif promo.promo_type == 'points_purchase' %}Compra de pontos{% else %}Promoção{% endif %}
+                        </span>
+                      </div>
+
+                      {# Bonus stat #}
+                      {% if promo.bonus_percent %}
+                      <div style="margin-bottom:12px;">
+                        <span style="font-size:42px;font-weight:800;color:#1C60DA;letter-spacing:-0.04em;line-height:1;">+{{ promo.bonus_percent|int }}</span><span style="font-size:22px;font-weight:700;color:#455084;letter-spacing:-0.02em;">%</span>
+                        <div style="font-size:12px;color:#707AA9;margin-top:3px;">
+                          {% if promo.promo_type == 'transfer_bonus' %}de bônus na transferência
+                          {% elif promo.promo_type == 'points_purchase' %}de bônus na compra
+                          {% else %}de bônus{% endif %}
+                        </div>
+                      </div>
+                      {% elif promo.title %}
+                      <div style="font-size:16px;font-weight:700;color:#CED4F2;letter-spacing:-0.02em;line-height:1.3;margin-bottom:10px;">
+                        {{ promo.title }}
+                      </div>
+                      {% endif %}
+
+                      {# Dates #}
+                      <div style="font-size:13px;color:#707AA9;line-height:1.5;margin-bottom:12px;">
+                        {% if promo.starts_at %}
+                          <span style="color:#A5ACCD;font-weight:500;">{{ promo.starts_at.strftime('%d/%m') }}</span>
+                          <span style="color:#455084;"> até </span>
+                        {% else %}
+                          <span style="color:#455084;">Válido até </span>
+                        {% endif %}
+                        <span style="color:#A5ACCD;font-weight:500;">{{ promo.ends_at.strftime('%d %b %Y') }}</span>
+                      </div>
+
+                      {# Conditions #}
+                      {% if promo.conditions %}
+                      <div style="font-size:12px;color:#707AA9;line-height:1.5;margin-bottom:12px;padding:10px 14px;background:rgba(206,212,242,0.04);border-radius:8px;border:1px solid rgba(206,212,242,0.08);">
+                        {{ promo.conditions }}
+                      </div>
+                      {% endif %}
+
+                      {# Badges #}
+                      {% if promo.requires_club or promo.requires_card or promo.cpf_limit %}
+                      <div style="margin-bottom:14px;">
+                        {% if promo.requires_club %}
+                        <span style="display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:3px 9px;border-radius:9999px;background:rgba(245,158,11,0.12);color:#FCD34D;border:1px solid rgba(245,158,11,0.25);margin-right:5px;">
+                          Requer clube
+                        </span>
+                        {% endif %}
+                        {% if promo.requires_card %}
+                        <span style="display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:3px 9px;border-radius:9999px;background:rgba(245,158,11,0.12);color:#FCD34D;border:1px solid rgba(245,158,11,0.25);margin-right:5px;">
+                          Requer cartão
+                        </span>
+                        {% endif %}
+                        {% if promo.cpf_limit %}
+                        <span style="display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:3px 9px;border-radius:9999px;background:rgba(28,96,218,0.12);color:#7EB0FF;border:1px solid rgba(28,96,218,0.25);">
+                          Limite: {{ promo.cpf_limit }}
+                        </span>
+                        {% endif %}
+                      </div>
+                      {% endif %}
+
+                      {# CTA #}
+                      <a href="{{ promo.source_url }}" style="display:inline-block;background:#1C60DA;color:#ffffff;font-family:'Geist','SF Pro Display',-apple-system,sans-serif;font-size:13px;font-weight:600;padding:9px 20px;border-radius:10px;text-decoration:none;letter-spacing:0.01em;">
+                        Ver promoção
+                        <span style="margin-left:4px;opacity:0.8;">&#8594;</span>
+                      </a>
+
+                    </td>
+                  </tr>
+                </table>
+
+                {% endfor %}
+              </td>
+            </tr>
+
+            {# ── Divider ── #}
+            <tr>
+              <td>
+                <div style="height:1px;background:rgba(206,212,242,0.07);margin:0 40px;"></div>
+              </td>
+            </tr>
+
+            {# ── Footer ── #}
+            <tr>
+              <td style="padding:28px 40px;text-align:center;">
+                <div style="font-size:12px;color:#455084;line-height:1.7;">
+                  Você está recebendo este email porque se cadastrou no Radar de Milhas.<br>
+                  <a href="{{ unsubscribe_url }}" style="color:#455084;text-decoration:underline;">Cancelar inscrição</a>
+                  &nbsp;&middot;&nbsp;
+                  <a href="https://radardemilhas.com.br/preferences?token={{ user.unsubscribe_token }}" style="color:#455084;text-decoration:underline;">Editar preferências</a>
+                </div>
+              </td>
+            </tr>
+
+          </table>
+          <!--[if mso]></td></tr></table><![endif]-->
+        </td>
+      </tr>
+    </table>
+  </div>
+</body>
+</html>
