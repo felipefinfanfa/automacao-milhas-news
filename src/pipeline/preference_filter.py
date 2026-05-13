@@ -48,7 +48,9 @@ def _matches_flight_award(promo: PromotionData, prefs: UserPreferencesData) -> b
     # Artigos RSS têm source_program="unknown"; o programa real fica em origin_program
     if prefs.flight_programs:
         prog = (promo.origin_program or promo.source_program or "").lower()
-        if prog not in [p.lower() for p in prefs.flight_programs]:
+        known_programs = {"smiles", "azul", "latam", "livelo", "esfera", "iupp"}
+        # Only filter if we positively identified a program; "unknown" passes through
+        if prog in known_programs and prog not in [p.lower() for p in prefs.flight_programs]:
             return False
 
     # Sem rotas configuradas → qualquer rota do programa aceito basta
