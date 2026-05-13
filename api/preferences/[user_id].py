@@ -32,6 +32,8 @@ def _row_to_dict(row: Any) -> dict:
         "monitored_programs": row.monitored_programs or [],
         "transfer_pairs": row.transfer_pairs or [],
         "accumulation_programs": row.accumulation_programs or [],
+        "flight_routes": row.flight_routes or [],
+        "flight_programs": row.flight_programs or [],
     }
 
 
@@ -81,6 +83,12 @@ class handler(BaseHTTPRequestHandler):
             prefs_in = UserPreferencesIn(**body)
             valid_pairs = prefs_in.validated_transfer_pairs()
             pairs = [{"source": p.source, "dest": p.dest} for p in valid_pairs]
+            valid_routes = prefs_in.validated_flight_routes()
+            routes_data = [
+                {"origin_iata": r.origin_iata, "destination_iata": r.destination_iata}
+                for r in valid_routes
+            ]
+            valid_flight_programs = prefs_in.validated_flight_programs()
 
             with _SessionFactory() as session:
                 row = session.query(UserPreferences).filter_by(user_id=user_id).first()
@@ -88,18 +96,27 @@ class handler(BaseHTTPRequestHandler):
                     row.monitored_programs = prefs_in.validated_programs()
                     row.transfer_pairs = pairs
                     row.accumulation_programs = prefs_in.validated_accumulation()
+                    row.flight_routes = routes_data
+                    row.flight_programs = valid_flight_programs
                 else:
                     row = UserPreferences(
                         user_id=uuid.UUID(user_id),
                         monitored_programs=prefs_in.validated_programs(),
                         transfer_pairs=pairs,
                         accumulation_programs=prefs_in.validated_accumulation(),
+                        flight_routes=routes_data,
+                        flight_programs=valid_flight_programs,
                     )
                     session.add(row)
                 session.commit()
                 session.refresh(row)
                 result = _row_to_dict(row)
-                has_prefs = bool(row.transfer_pairs or row.accumulation_programs)
+                has_prefs = bool(
+                    row.transfer_pairs
+                    or row.accumulation_programs
+                    or row.flight_routes
+                    or row.flight_programs
+                )
                 send_confirmation = has_prefs and row.email
                 token = str(row.unsubscribe_token) if row.unsubscribe_token else None
                 uid = str(row.user_id)
@@ -111,6 +128,8 @@ class handler(BaseHTTPRequestHandler):
                     if "source" in p and "dest" in p
                 ]
                 user_name = row.name
+                flight_routes_data = row.flight_routes or []
+                flight_programs_data = row.flight_programs or []
 
             if send_confirmation:
                 from src.pipeline.dispatcher import dispatch_confirmation
@@ -120,6 +139,8 @@ class handler(BaseHTTPRequestHandler):
                     unsubscribe_token=token,
                     transfer_pairs=pair_objs,
                     accumulation_programs=acc_programs,
+                    flight_routes=flight_routes_data,
+                    flight_programs=flight_programs_data,
                     name=user_name,
                 )
 
