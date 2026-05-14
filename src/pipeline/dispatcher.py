@@ -187,6 +187,7 @@ def dispatch_day1(
     user_email: str,
     new_promos: list[Any],
     unsubscribe_token: str | None = None,
+    user_name: str | None = None,
 ) -> bool:
     """Sends consolidated Day 1 email to a user.
 
@@ -226,6 +227,7 @@ def dispatch_day1(
         {
             "email_title": "Promoções para Você — Radar de Milhas",
             "header_title": 'Promoções <span style="color:#0891b2">para Você</span>',
+            "user": {"name": user_name},
             "promotions": promotions,
             "transfer_promos": transfer_promos,
             "flight_promos": flight_promos,

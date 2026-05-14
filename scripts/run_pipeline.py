@@ -155,6 +155,7 @@ def _dispatch_emails(session: Any) -> int:
                 user_email=user_email,
                 new_promos=user_active,
                 unsubscribe_token=prefs.unsubscribe_token,
+                user_name=prefs.name,
             )
             if sent:
                 emails_sent += 1
