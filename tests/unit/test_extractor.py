@@ -54,38 +54,31 @@ def test_extract_date_range_none():
     assert end is None
 
 
+def test_extract_date_range_prefers_explicit_end_context_over_position():
+    """Quando há contexto 'válido até X', X é o end_date mesmo se houver datas antes."""
+    text = "Artigo publicado em 22/05/2026. Promoção válida até 15/06/2026."
+    start, end = _extract_date_range(text)
+    assert end is not None
+    assert end.day == 15 and end.month == 6
+    # 22/05 é uma data candidata a start (sem contexto de fim) e anterior ao end
+    assert start is not None
+    assert start.day == 22
+
+
+def test_extract_date_range_ignores_unrelated_past_dates():
+    """Datas isoladas no texto (e.g. de artigos relacionados) não viram end_date."""
+    text = "Em 13/08/2025 lançamos a promoção anterior. " "Agora a nova é válida até 30/06/2026."
+    start, end = _extract_date_range(text)
+    assert end is not None
+    assert end.day == 30 and end.month == 6 and end.year == 2026
+
+
 def test_find_programs_ordered():
     text = "Transfira de Livelo para Smiles"
     programs = _find_programs(text)
     assert "livelo" in programs
     assert "smiles" in programs
     assert programs.index("livelo") < programs.index("smiles")
-
-
-def test_extract_from_html_smiles(smiles_html):
-    signal = RawSignal(
-        source_url="https://www.smiles.com.br/transferencia",
-        source_program="smiles",
-        source_type="direct_scraper",
-        raw_content=smiles_html,
-    )
-    promos = extract(signal)
-    assert len(promos) > 0
-    assert any(p.bonus_percent == 100.0 for p in promos)
-    assert any(p.origin_program == "livelo" for p in promos)
-    assert any(p.destination_program == "smiles" for p in promos)
-
-
-def test_extract_from_html_latam(latam_html):
-    signal = RawSignal(
-        source_url="https://www.latam.com/promo",
-        source_program="latam",
-        source_type="direct_scraper",
-        raw_content=latam_html,
-    )
-    promos = extract(signal)
-    assert len(promos) > 0
-    assert any(p.bonus_percent == 80.0 for p in promos)
 
 
 def test_extract_from_rss(rss_xml):

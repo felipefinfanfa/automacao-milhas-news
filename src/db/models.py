@@ -58,16 +58,6 @@ class Promotion(Base):
     email_logs: Any = relationship("EmailLog", back_populates="promotion")
 
 
-class SourceSnapshot(Base):
-    __tablename__ = "source_snapshots"
-
-    id: Any = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    url: Any = Column(Text, nullable=False, unique=True)
-    content_hash: Any = Column(Text, nullable=False)
-    raw_content: Any = Column(Text)
-    fetched_at: Any = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
-
-
 class UserPreferences(Base):
     __tablename__ = "user_preferences"
 

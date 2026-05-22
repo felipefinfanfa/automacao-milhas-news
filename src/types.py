@@ -8,15 +8,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field
 
 PromoType = Literal["transfer_bonus", "points_purchase", "flight_award", "other"]
-SourceType = Literal[
-    "direct_scraper",
-    "hash_diff",
-    "rss",
-    "google_news",
-    "sitemap",
-    "robots",
-    "news_scraper",
-]
+SourceType = Literal["rss"]
 
 
 class RawSignal(BaseModel):

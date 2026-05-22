@@ -1,10 +1,12 @@
-node_modules/
-dist/
+# Env
 .env
 .env.local
 *.env.local
-snapshots/
+
+# Logs / temp
 *.log
+_research*
+snapshots/
 .DS_Store
 
 # Python
@@ -18,17 +20,18 @@ __pycache__/
 .venv/
 venv/
 
-# Playwright
-playwright-report/
+# Node (frontend tooling, if used)
+node_modules/
+dist/
 
-# Portfolio (design reference, not deployed from here)
-portfolio/
-
-# Internal planning docs
-docs/
-
-# Claude Code (configurações locais)
+# Claude Code memory & local settings
+.remember/
 .claude/settings.local.json
 .claude/skills/
 SKILL.md
-.vercel
+
+# Vercel deploy metadata
+.vercel/
+
+# Playwright
+playwright-report/

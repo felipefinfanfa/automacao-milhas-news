@@ -1,8 +1,4 @@
-"""Extração estruturada de promoções a partir de RawSignals.
-
-Seletores CSS e regex por programa ficam em PROGRAM_RULES.
-Atualizar PROGRAM_RULES (e apenas aqui) quando um programa mudar layout.
-"""
+"""Extração estruturada de promoções a partir de RawSignals (fontes texto/RSS)."""
 
 from __future__ import annotations
 
@@ -13,8 +9,6 @@ import logging
 import re
 from datetime import UTC, datetime, timedelta
 from typing import Any
-
-from bs4 import BeautifulSoup
 
 from src.config.airports import CITY_TO_IATA
 from src.types import PromotionData, RawSignal
@@ -49,7 +43,6 @@ _END_DATE_CONTEXT_RE = re.compile(r"v[aá]lid[ao]|at[eé]|termina|encerra|expira
 
 _PROMO_KEYWORD_RE = re.compile(r"promo|b[oô]nus|transfer|campanha|oferta|milhas|pontos", re.I)
 
-# Natural language date patterns (Portuguese)
 _NL_TODAY_RE = re.compile(
     r"hoje\s+[eé]\s+o\s+[úu]ltimo\s+dia"
     r"|[úu]ltimo\s+dia\s+hoje"
@@ -112,69 +105,6 @@ _MONTH_MAP: dict[str, int] = {
     "dezembro": 12,
 }
 
-PROGRAM_RULES: dict[str, dict[str, Any]] = {
-    "smiles": {
-        "promo_selectors": [
-            ".promo-card",
-            ".transferencia-card",
-            "[class*='promoção']",
-            ".campanha",
-            "article.promo",
-        ],
-        "title_selectors": ["h1", "h2", ".card-title", ".promo-title"],
-        "confidence_boost": 0.1,
-    },
-    "azul": {
-        "promo_selectors": [
-            ".card-promocao",
-            ".transferencia",
-            "[class*='bonus']",
-            ".offer-card",
-            "article",
-        ],
-        "title_selectors": ["h1", "h2", "h3", ".titulo"],
-        "confidence_boost": 0.0,
-    },
-    "latam": {
-        "promo_selectors": [
-            ".promo-item",
-            ".transfer-bonus",
-            "[class*='campanha']",
-            ".card",
-            ".offer",
-        ],
-        "title_selectors": ["h1", "h2", "h3"],
-        "confidence_boost": 0.0,
-    },
-    "livelo": {
-        "promo_selectors": [
-            ".card-oferta",
-            ".transferencia-pontos",
-            "[class*='promo']",
-            ".promo",
-            "article",
-        ],
-        "title_selectors": ["h1", "h2", ".card-title"],
-        "confidence_boost": 0.05,
-    },
-    "esfera": {
-        "promo_selectors": [
-            ".promo-esfera",
-            ".transferencia",
-            "[class*='bonus']",
-            ".card",
-            "article",
-        ],
-        "title_selectors": ["h1", "h2", "h3"],
-        "confidence_boost": 0.0,
-    },
-    "iupp": {
-        "promo_selectors": ["article", ".promo", ".card", "[class*='bonus']"],
-        "title_selectors": ["h1", "h2", "h3"],
-        "confidence_boost": 0.0,
-    },
-}
-
 
 def _fingerprint(fields: list[str]) -> str:
     normalized = [f.strip().lower() if f else "" for f in fields]
@@ -192,7 +122,7 @@ def _extract_bonus_pct(text: str) -> float | None:
     return None
 
 
-def _parse_date_match(m: re.Match) -> datetime | None:
+def _parse_date_match(m: re.Match[str]) -> datetime | None:
     d, mo, y = m.group(1), m.group(2), m.group(3)
     year = int(f"20{y}") if len(y) == 2 else int(y)
     try:
@@ -202,22 +132,15 @@ def _parse_date_match(m: re.Match) -> datetime | None:
 
 
 def _extract_natural_end_date(text: str, reference_date: datetime | None = None) -> datetime | None:
-    """Infere ends_at de expressões em português como 'hoje é o último dia'.
-
-    reference_date: data de publicação do artigo. "Hoje" é relativo a essa data,
-    não à data atual do sistema. Para artigos RSS, é o published_parsed da entrada.
-    """
     today = (reference_date or datetime.now(UTC)).date()
 
-    def eod(d) -> datetime:
+    def eod(d: Any) -> datetime:
         return datetime(d.year, d.month, d.day, 23, 59, 59, tzinfo=UTC)
 
     if _NL_TODAY_RE.search(text):
         return eod(today)
-
     if _NL_TOMORROW_RE.search(text):
         return eod(today + timedelta(days=1))
-
     if _NL_MONTH_END_RE.search(text):
         last_day = calendar.monthrange(today.year, today.month)[1]
         return eod(today.replace(day=last_day))
@@ -237,7 +160,6 @@ def _extract_natural_end_date(text: str, reference_date: datetime | None = None)
         if month:
             try:
                 d = datetime(year, month, day, 23, 59, 59, tzinfo=UTC)
-                # No year given and date already passed → assume next year
                 if not m.group(3) and d.date() < today:
                     d = d.replace(year=year + 1)
                 return d
@@ -250,22 +172,49 @@ def _extract_natural_end_date(text: str, reference_date: datetime | None = None)
 def _extract_date_range(
     text: str, reference_date: datetime | None = None
 ) -> tuple[datetime | None, datetime | None]:
+    """Extrai (starts_at, ends_at) de texto.
+
+    Estratégia:
+      1. Para cada match de data, checa se os 60 chars anteriores contêm contexto de
+         fim ("válido até", "termina", "encerra", "expira", "prazo", "até").
+      2. Datas com contexto de fim → end_candidates. Demais → start_candidates.
+      3. ends_at = última data de fim no futuro (ou última se nenhuma futura).
+      4. Se nenhuma data de fim explícita E houver ≥2 datas (padrão "X a Y") →
+         min/max das start_candidates.
+      5. Fallback: linguagem natural ("hoje é o último dia", etc.).
+    """
+    now = reference_date or datetime.now(UTC)
     matches = list(_DATE_PATTERN.finditer(text))
+
+    end_candidates: list[datetime] = []
+    start_candidates: list[datetime] = []
+
+    for m in matches:
+        dt = _parse_date_match(m)
+        if not dt:
+            continue
+        before = text[max(0, m.start() - 60) : m.start()]
+        if _END_DATE_CONTEXT_RE.search(before):
+            end_candidates.append(dt)
+        else:
+            start_candidates.append(dt)
 
     starts_at: datetime | None = None
     ends_at: datetime | None = None
 
-    if len(matches) == 1:
-        idx = matches[0].start()
-        before = text[max(0, idx - 50) : idx]
-        dt = _parse_date_match(matches[0])
-        if _END_DATE_CONTEXT_RE.search(before):
-            ends_at = dt
-        else:
-            starts_at = dt
-    elif len(matches) >= 2:
-        starts_at = _parse_date_match(matches[0])
-        ends_at = _parse_date_match(matches[1])
+    if end_candidates:
+        future_ends = [d for d in end_candidates if d >= now]
+        ends_at = max(future_ends) if future_ends else max(end_candidates)
+        if start_candidates:
+            past_or_equal_starts = [d for d in start_candidates if d <= (ends_at or now)]
+            if past_or_equal_starts:
+                starts_at = min(past_or_equal_starts)
+    elif len(start_candidates) >= 2:
+        # Padrão "X a Y" sem palavra-chave: assume range
+        starts_at = min(start_candidates)
+        ends_at = max(start_candidates)
+    elif len(start_candidates) == 1:
+        starts_at = start_candidates[0]
 
     if ends_at is None:
         ends_at = _extract_natural_end_date(text, reference_date)
@@ -294,10 +243,7 @@ _FLIGHT_AWARD_RE = re.compile(
     re.I,
 )
 
-_MILES_COUNT_RE = re.compile(
-    r"([\d\.,]+)\s*(mil\s+)?(milhas|pontos)\b",
-    re.I,
-)
+_MILES_COUNT_RE = re.compile(r"([\d\.,]+)\s*(mil\s+)?(milhas|pontos)\b", re.I)
 
 _ROUTE_FROM_RE = re.compile(
     r"(?:de|saindo\s+de|partindo\s+de)\s+"
@@ -308,7 +254,7 @@ _ROUTE_FROM_RE = re.compile(
 
 _ROUTE_TO_RE = re.compile(
     r"(?:para|at[eé]|com\s+destino\s+a)\s+"
-    r"(?:o\s+|a\s+|os\s+|as\s+)?"  # skip articles: "para o Caribe" → skip "o"
+    r"(?:o\s+|a\s+|os\s+|as\s+)?"
     r"([a-zà-ü\s]{3,30}?)"
     r"(?=\s+(?:com|por|a\s+partir|em|via)\b|,|\.|$|\s*\Z)",
     re.I,
@@ -316,14 +262,11 @@ _ROUTE_TO_RE = re.compile(
 
 
 def _find_transfer_direction(text: str) -> tuple[str | None, str | None]:
-    """Detecta direção de transferência por padrão 'X para Y'."""
     m = _TRANSFER_DIRECTION_RE.search(text)
     if not m:
         return None, None
-    origin_raw = m.group("origin").lower().strip()
-    dest_raw = m.group("dest").lower().strip()
-    origin = _PROGRAM_LABELS.get(origin_raw)
-    dest = _PROGRAM_LABELS.get(dest_raw)
+    origin = _PROGRAM_LABELS.get(m.group("origin").lower().strip())
+    dest = _PROGRAM_LABELS.get(m.group("dest").lower().strip())
     return origin, dest
 
 
@@ -345,7 +288,6 @@ def _find_programs(text: str) -> list[str]:
 
 
 def _extract_miles_count(text: str) -> int | None:
-    """Extrai a maior contagem de milhas/pontos do texto. Ignora valores < 1000."""
     values: list[int] = []
     for m in _MILES_COUNT_RE.finditer(text):
         raw = m.group(1).replace(".", "").replace(",", "")
@@ -362,8 +304,6 @@ def _extract_miles_count(text: str) -> int | None:
 
 
 def _extract_route(text: str) -> tuple[str | None, str | None]:
-    """Extrai (origin_iata, destination_iata) do texto via regex + CITY_TO_IATA."""
-
     def _lookup(city_raw: str) -> str | None:
         city = city_raw.strip().lower()
         if city in CITY_TO_IATA:
@@ -395,23 +335,19 @@ def _make_promotion(
     source_program: str,
     confidence: float,
 ) -> PromotionData | None:
-    bonus_pct = _extract_bonus_pct(text)
     if not _PROMO_KEYWORD_RE.search(f"{title or ''} {text}"):
         return None
 
     full_text = f"{title or ''} {text}"
-    # Use article publication date as reference for relative expressions ("hoje", "amanhã").
-    # For RSS feeds, signal.fetched_at is set to published_parsed — not the scrape time.
     starts_at, ends_at = _extract_date_range(full_text, signal.fetched_at)
     if ends_at is None:
         return None
 
-    # Discard promotions already expired relative to now, even if the article's
-    # "today" was in the past (e.g. old RSS entry saying "hoje é o último dia").
     if ends_at < datetime.now(UTC):
         return None
 
-    # Prioridade: padrão direcional "X para Y" → ordem no texto → source_program
+    bonus_pct = _extract_bonus_pct(full_text)
+
     dir_origin, dir_dest = _find_transfer_direction(full_text)
     if dir_origin:
         origin, dest = dir_origin, dir_dest
@@ -424,8 +360,6 @@ def _make_promotion(
         else:
             origin, dest = source_program, None
 
-    # transfer_bonus takes priority (needs explicit %).
-    # flight_award second: no % bonus but flight patterns detected.
     if bonus_pct:
         promo_type = "transfer_bonus"
     elif _FLIGHT_AWARD_RE.search(full_text):
@@ -433,7 +367,6 @@ def _make_promotion(
     else:
         promo_type = "other"
 
-    # Extract flight-specific fields
     origin_iata: str | None = None
     destination_iata: str | None = None
     miles_count: int | None = None
@@ -441,23 +374,24 @@ def _make_promotion(
         miles_count = _extract_miles_count(full_text)
         origin_iata, destination_iata = _extract_route(full_text)
 
-    # ends_at is always set at this point (gate above).
-    fp_date = ends_at.date().isoformat()
+    # Fingerprint uses month granularity (YYYY-MM) to prevent same-month duplicates
+    # when the same promotion is mentioned in multiple articles with slightly different
+    # date extraction results.
+    fp_month = ends_at.strftime("%Y-%m")
 
     if promo_type == "flight_award":
         if origin_iata or destination_iata:
-            fp = _fingerprint([origin_iata or "", destination_iata or "", "flight_award", fp_date])
+            fp = _fingerprint([origin_iata or "", destination_iata or "", "flight_award", fp_month])
         else:
-            # No route resolved — use URL to prevent same-day collision across articles
-            fp = _fingerprint([signal.source_url, "flight_award", fp_date])
+            fp = _fingerprint([signal.source_url, "flight_award", fp_month])
     else:
         fp = _fingerprint(
             [
-                origin,
+                origin or "",
                 dest or "",
                 str(int(bonus_pct)) if bonus_pct else "",
                 promo_type,
-                fp_date,
+                fp_month,
             ]
         )
 
@@ -486,88 +420,17 @@ def _make_promotion(
 
 
 def extract(signal: RawSignal) -> list[PromotionData]:
-    """Extrai promoções estruturadas de um RawSignal."""
+    """Extrai promoções estruturadas de um RawSignal de texto/RSS."""
     if not signal.raw_content:
         return []
 
     source_program = signal.source_program or "unknown"
-    rules = PROGRAM_RULES.get(source_program, {})
-    base_confidence = 0.6 + rules.get("confidence_boost", 0.0)
-
-    source_type = signal.source_type
-
-    if source_type in ("rss", "google_news"):
-        return _extract_from_text(signal, source_program, base_confidence)
-
-    if source_type in ("direct_scraper", "hash_diff"):
-        return _extract_from_html(signal, source_program, rules, base_confidence)
-
-    return _extract_from_text(signal, source_program, base_confidence * 0.8)
-
-
-def _extract_from_text(
-    signal: RawSignal, source_program: str, confidence: float
-) -> list[PromotionData]:
     text = f"{signal.title or ''} {signal.raw_content or ''}"
     promo = _make_promotion(
         signal=signal,
         text=text,
         title=signal.title,
         source_program=source_program,
-        confidence=confidence,
+        confidence=0.6,
     )
     return [promo] if promo else []
-
-
-def _extract_from_html(
-    signal: RawSignal,
-    source_program: str,
-    rules: dict[str, Any],
-    confidence: float,
-) -> list[PromotionData]:
-    soup = BeautifulSoup(signal.raw_content or "", "lxml")
-    promotions: list[PromotionData] = []
-
-    selectors = rules.get("promo_selectors", []) + [
-        "article",
-        ".promo",
-        ".campanha",
-        ".card",
-        "[class*='promo']",
-        "[class*='bonus']",
-    ]
-    title_selectors = rules.get("title_selectors", ["h1", "h2", "h3", ".title"])
-
-    blocks = soup.select(", ".join(selectors))
-
-    if not blocks:
-        body_text = soup.get_text(separator=" ", strip=True)
-        promo = _make_promotion(
-            signal=signal,
-            text=body_text,
-            title=soup.title.string.strip() if soup.title and soup.title.string else signal.title,
-            source_program=source_program,
-            confidence=confidence * 0.8,
-        )
-        if promo:
-            promotions.append(promo)
-        return promotions
-
-    for block in blocks:
-        text = block.get_text(separator=" ", strip=True)
-        if len(text) < 20:
-            continue
-        title_el = block.select_one(", ".join(title_selectors))
-        title = title_el.get_text(strip=True) if title_el else None
-
-        promo = _make_promotion(
-            signal=signal,
-            text=f"{title or ''} {text}",
-            title=title,
-            source_program=source_program,
-            confidence=confidence,
-        )
-        if promo:
-            promotions.append(promo)
-
-    return promotions

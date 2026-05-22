@@ -12,7 +12,7 @@ def _make_transfer_promo(origin: str, dest: str, bonus: float = 100.0) -> Promot
     return PromotionData(
         fingerprint=f"fp-{origin}-{dest}",
         source_program=origin,
-        source_type="direct_scraper",
+        source_type="rss",
         source_url="https://example.com",
         promo_type="transfer_bonus",
         origin_program=origin,
@@ -26,7 +26,7 @@ def _make_accum_promo(program: str) -> PromotionData:
     return PromotionData(
         fingerprint=f"fp-accum-{program}",
         source_program=program,
-        source_type="direct_scraper",
+        source_type="rss",
         source_url="https://example.com",
         promo_type="other",
         origin_program=program,

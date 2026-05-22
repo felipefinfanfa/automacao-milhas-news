@@ -1,6 +1,6 @@
 """Dispatcher de e-mail: decide se/quando enviar, consolida por usuário.
 
-Prioridade de envio: Resend (primary) → Gmail SMTP (fallback).
+Provedor único: Resend.
 Nunca envia e-mail vazio ou para promoção expirada.
 Múltiplas promoções novas no mesmo scan = 1 e-mail consolidado por usuário.
 """
@@ -8,10 +8,7 @@ Múltiplas promoções novas no mesmo scan = 1 e-mail consolidado por usuário.
 from __future__ import annotations
 
 import logging
-import smtplib
 from datetime import UTC, datetime
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -31,12 +28,11 @@ _jinja_env = Environment(
 
 
 # ---------------------------------------------------------------------------
-# Email log helpers (inlined from the deleted sequence.py)
+# Email log helpers
 # ---------------------------------------------------------------------------
 
 
 def has_sent(session: Any, user_id: str, promo_id: str, day_number: int) -> bool:
-    """Returns True if the email for day N was already sent for this (user, promo)."""
     return (
         session.query(EmailLog)
         .filter_by(user_id=user_id, promo_id=promo_id, day_number=day_number)
@@ -45,21 +41,16 @@ def has_sent(session: Any, user_id: str, promo_id: str, day_number: int) -> bool
 
 
 def record_sent(session: Any, user_id: str, promo_id: str, day_number: int) -> None:
-    """Records a successful send in email_log. Call only after a confirmed send."""
-    log = EmailLog(
-        user_id=user_id,
-        promo_id=promo_id,
-        day_number=day_number,
-        sent_at=datetime.now(UTC),
+    session.add(
+        EmailLog(
+            user_id=user_id,
+            promo_id=promo_id,
+            day_number=day_number,
+            sent_at=datetime.now(UTC),
+        )
     )
-    session.add(log)
     session.commit()
-    logger.debug(
-        "email_log registrado: user=%s promo=%s day=%d",
-        user_id[:8],
-        str(promo_id)[:8],
-        day_number,
-    )
+    logger.debug("email_log: user=%s promo=%s day=%d", user_id[:8], str(promo_id)[:8], day_number)
 
 
 # ---------------------------------------------------------------------------
@@ -72,17 +63,17 @@ def _render_template(template_name: str, context: dict[str, Any]) -> str:
     context.setdefault("date_str", now.strftime("%A, %d de %B de %Y").lower())
     context.setdefault("unsubscribe_url", None)
     context.setdefault("manage_url", None)
-    tpl = _jinja_env.get_template(template_name)
-    return tpl.render(**context)
+    return _jinja_env.get_template(template_name).render(**context)
 
 
 # ---------------------------------------------------------------------------
-# Transport layer
+# Transport — Resend only
 # ---------------------------------------------------------------------------
 
 
-def _send_via_resend(to: str, subject: str, html: str) -> bool:
+def send_email(to: str, subject: str, html: str) -> bool:
     if not settings.resend_api_key:
+        logger.error("RESEND_API_KEY não configurada — e-mail não enviado")
         return False
     try:
         import resend
@@ -99,33 +90,8 @@ def _send_via_resend(to: str, subject: str, html: str) -> bool:
         logger.info("E-mail enviado via Resend para %s", to)
         return True
     except Exception as exc:
-        logger.warning("Falha ao enviar via Resend: %s", exc)
+        logger.error("Falha ao enviar via Resend para %s: %s", to, exc)
         return False
-
-
-def _send_via_gmail(to: str, subject: str, html: str) -> bool:
-    if not settings.gmail_user or not settings.gmail_app_password:
-        return False
-    try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = subject
-        msg["From"] = settings.gmail_user
-        msg["To"] = to
-        msg.attach(MIMEText(html, "html", "utf-8"))
-
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(settings.gmail_user, settings.gmail_app_password)
-            server.sendmail(settings.gmail_user, [to], msg.as_string())
-        logger.info("E-mail enviado via Gmail SMTP para %s", to)
-        return True
-    except Exception as exc:
-        logger.error("Falha ao enviar via Gmail: %s", exc)
-        return False
-
-
-def send_email(to: str, subject: str, html: str) -> bool:
-    """Tries Resend first, falls back to Gmail SMTP."""
-    return _send_via_resend(to, subject, html) or _send_via_gmail(to, subject, html)
 
 
 # ---------------------------------------------------------------------------
@@ -153,7 +119,6 @@ def dispatch_confirmation(
     flight_programs: list[str] | None = None,
     name: str | None = None,
 ) -> bool:
-    """Sends confirmation email after user saves preferences."""
     unsubscribe_url, manage_url = _build_email_urls(user_id, unsubscribe_token)
     user = SimpleNamespace(
         name=name,
@@ -177,7 +142,7 @@ def dispatch_confirmation(
     )
     sent = send_email(user_email, "Radar de Milhas — Preferências salvas", html)
     if sent:
-        logger.info("E-mail de confirmação enviado para %s", user_email)
+        logger.info("Confirmação enviada para %s", user_email)
     return sent
 
 
@@ -189,14 +154,6 @@ def dispatch_day1(
     unsubscribe_token: str | None = None,
     user_name: str | None = None,
 ) -> bool:
-    """Sends consolidated Day 1 email to a user.
-
-    Args:
-        new_promos: active promos not yet sent to this user (already preference-filtered).
-
-    Returns:
-        True if the email was sent successfully.
-    """
     now = datetime.now(UTC)
 
     promos_to_send = [
@@ -208,17 +165,14 @@ def dispatch_day1(
     ]
 
     if not promos_to_send:
-        logger.debug("Nenhuma promo nova para user=%s", user_id[:8])
         return False
 
-    # bonus_percent is None for flight_award/other — they sort to 0 and appear after transfer_bonus
     sorted_promos = sorted(promos_to_send, key=lambda p: p.bonus_percent or 0, reverse=True)
     transfer_promos = [p for p in sorted_promos if p.promo_type == "transfer_bonus"]
     flight_promos = [p for p in sorted_promos if p.promo_type == "flight_award"]
     accum_promos = [
         p for p in sorted_promos if p.promo_type not in ("transfer_bonus", "flight_award")
     ]
-    promotions = transfer_promos + flight_promos + accum_promos
 
     unsubscribe_url, manage_url = _build_email_urls(user_id, unsubscribe_token)
 
@@ -228,7 +182,7 @@ def dispatch_day1(
             "email_title": "Promoções para Você — Radar de Milhas",
             "header_title": 'Promoções <span style="color:#0891b2">para Você</span>',
             "user": {"name": user_name},
-            "promotions": promotions,
+            "promotions": sorted_promos,
             "transfer_promos": transfer_promos,
             "flight_promos": flight_promos,
             "accum_promos": accum_promos,

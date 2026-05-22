@@ -12,16 +12,6 @@ FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
 
 @pytest.fixture()
-def smiles_html() -> str:
-    return (FIXTURES_DIR / "smiles_promo.html").read_text(encoding="utf-8")
-
-
-@pytest.fixture()
-def latam_html() -> str:
-    return (FIXTURES_DIR / "latam_promo.html").read_text(encoding="utf-8")
-
-
-@pytest.fixture()
 def rss_xml() -> str:
     return (FIXTURES_DIR / "rss_melhores_destinos.xml").read_text(encoding="utf-8")
 
