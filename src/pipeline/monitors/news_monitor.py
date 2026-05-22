@@ -41,6 +41,15 @@ _FALLBACK_SELECTORS = [".entry-content", ".post-content", "article", "main"]
 # Tags removidas antes de extrair texto (reduz ruído de navegação/sidebar).
 _STRIP_TAGS = ["script", "style", "noscript", "iframe", "nav", "header", "footer", "aside"]
 
+# Seletores CSS de blocos a remover ANTES de extrair texto. Crítico para sites
+# cujo container principal engloba "Leia também" / posts relacionados — títulos
+# de outras promoções poluem o texto e causam misclassification (ex.: artigo de
+# acúmulo Esfera virar transfer_bonus +80% Esfera→Latam porque o footer mencionava
+# essa outra promo).
+_SITE_STRIP_SELECTORS: dict[str, list[str]] = {
+    "passageiro_de_primeira": [".box-footer"],
+}
+
 _PROMO_TITLE_RE = re.compile(
     r"b[oô]nus|transfer|promo|milhas|pontos|smiles|livelo|azul|latam|esfera"
     r"|passagem|passagens|voos|emiss[ãa]o|resgate|cashback",
@@ -68,12 +77,16 @@ def _extract_article_text(html: str, source_id: str) -> str | None:
     """Extrai o body do artigo usando seletor site-específico (first match wins)."""
     soup = BeautifulSoup(html, "lxml")
     selectors = _SITE_SELECTORS.get(source_id, []) + _FALLBACK_SELECTORS
+    site_noise = _SITE_STRIP_SELECTORS.get(source_id, [])
     for sel in selectors:
         el = soup.select_one(sel)
         if not el:
             continue
         for tag in el(_STRIP_TAGS):
             tag.decompose()
+        for noise_sel in site_noise:
+            for noise in el.select(noise_sel):
+                noise.decompose()
         txt = el.get_text(separator=" ", strip=True)
         if len(txt) >= _MIN_CONTENT_CHARS:
             return txt
