@@ -33,7 +33,10 @@ class Settings(BaseSettings):
 
     # Email — Resend (único provedor)
     resend_api_key: str = Field(default="", alias="RESEND_API_KEY")
-    email_from: str = Field(default="Radar de Milhas <noreply@milesradar.com>", alias="EMAIL_FROM")
+    email_from: str = Field(
+        default="Radar de Milhas <noreply@felipefinfanfa.com.br>",
+        alias="EMAIL_FROM",
+    )
 
     # Recipients
     digest_recipient: str = Field(alias="DIGEST_RECIPIENT")
