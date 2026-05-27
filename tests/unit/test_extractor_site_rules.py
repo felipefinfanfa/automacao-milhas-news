@@ -3,11 +3,8 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-import pytest
-
 from src.pipeline.extractor import _find_programs
 from src.types import RawSignal
-
 
 # ---------------------------------------------------------------------------
 # Helpers
