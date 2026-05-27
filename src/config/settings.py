@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     digest_recipient: str = Field(alias="DIGEST_RECIPIENT")
 
     # Capacity & URLs
-    max_users: int = Field(default=200, alias="MAX_USERS")
+    max_users: int = Field(default=40, alias="MAX_USERS")
     app_base_url: str = Field(default="https://milhas.felipefinfanfa.com.br", alias="APP_BASE_URL")
 
     # Observability
