@@ -30,6 +30,9 @@ dist/
 .claude/skills/
 SKILL.md
 
+# Design specs / planos locais
+docs/superpowers/
+
 # Vercel deploy metadata
 .vercel/
 
