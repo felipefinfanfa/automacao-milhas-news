@@ -11,6 +11,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from src.config.airports import CITY_TO_IATA
+from src.pipeline.site_rules import SITE_RULES
 from src.types import PromotionData, RawSignal
 
 logger = logging.getLogger(__name__)
@@ -245,6 +246,16 @@ _FLIGHT_AWARD_RE = re.compile(
     re.I,
 )
 
+_TRANSFER_KEYWORD_RE = re.compile(r"transfer[eê]ncia|transferir|transfira", re.I)
+
+_GLOBAL_TRANSFER_EXCLUDE_RE = re.compile(
+    r"compra\s+(direta\s+)?de\s+milhas"
+    r"|comprar\s+milhas"
+    r"|pontos\s+por\s+real"
+    r"|por\s+real\s+gasto",
+    re.I,
+)
+
 _MILES_COUNT_RE = re.compile(r"([\d\.,]+)\s*(mil\s+)?(milhas|pontos)\b", re.I)
 
 _ROUTE_FROM_RE = re.compile(
@@ -332,6 +343,50 @@ def _extract_route(text: str) -> tuple[str | None, str | None]:
     return origin_iata, destination_iata
 
 
+def _classify_promo_type(
+    text: str,
+    source_id: str,
+    bonus_pct: float | None,
+    dir_origin: str | None,
+    dest: str | None,
+) -> str:
+    """Classifica o tipo de promoção usando regras por site + genéricas.
+
+    Prioridade:
+      1. site confirm_flight_award   → flight_award
+      2. site confirm_transfer_bonus → transfer_bonus
+      3. site confirm_accumulation   → other
+      4. reject rules (site + global) → bloqueia transfer_bonus genérico
+      5. direção explícita + keyword + bonus_pct → transfer_bonus
+      6. flight_award genérico
+      7. other
+    """
+    lower = text.lower()
+    rule = SITE_RULES.get(source_id)
+
+    if rule:
+        if any(p.search(lower) for p in rule.confirm_flight_award):
+            return "flight_award"
+        if any(p.search(lower) for p in rule.confirm_transfer_bonus):
+            return "transfer_bonus"
+        if any(p.search(lower) for p in rule.confirm_accumulation):
+            return "other"
+
+    transfer_blocked = bool(_GLOBAL_TRANSFER_EXCLUDE_RE.search(lower))
+    if not transfer_blocked and rule:
+        transfer_blocked = any(p.search(lower) for p in rule.reject_transfer_bonus)
+
+    if not transfer_blocked:
+        has_transfer_intent = bool(dir_origin) or bool(_TRANSFER_KEYWORD_RE.search(lower))
+        if bonus_pct and has_transfer_intent and dest is not None:
+            return "transfer_bonus"
+
+    if _FLIGHT_AWARD_RE.search(text):
+        return "flight_award"
+
+    return "other"
+
+
 def _make_promotion(
     *,
     signal: RawSignal,
@@ -354,6 +409,8 @@ def _make_promotion(
     bonus_pct = _extract_bonus_pct(full_text)
 
     dir_origin, dir_dest = _find_transfer_direction(full_text)
+    source_id: str = signal.extra.get("feed_source", "")
+
     if dir_origin:
         origin, dest = dir_origin, dir_dest
     else:
@@ -365,12 +422,7 @@ def _make_promotion(
         else:
             origin, dest = source_program, None
 
-    if bonus_pct:
-        promo_type = "transfer_bonus"
-    elif _FLIGHT_AWARD_RE.search(full_text):
-        promo_type = "flight_award"
-    else:
-        promo_type = "other"
+    promo_type = _classify_promo_type(full_text, source_id, bonus_pct, dir_origin, dest)
 
     origin_iata: str | None = None
     destination_iata: str | None = None
