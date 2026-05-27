@@ -24,16 +24,21 @@ def _p(*patterns: str) -> list[re.Pattern[str]]:
     return [re.compile(p, re.I) for p in patterns]
 
 
+def _p_cs(*patterns: str) -> list[re.Pattern[str]]:
+    return [re.compile(p) for p in patterns]
+
+
 SITE_RULES: dict[str, SiteRule] = {
     "pontos_pra_voar": SiteRule(
-        confirm_flight_award=_p(
-            r"alerta\s+de\s+passagens\s+ppv",
-            r"\d+\s*milhas\s*\+\s*taxas",
-            r"\b[A-Z]{3}\b.{0,10}\b[A-Z]{3}\b",
-        ),
+        confirm_flight_award=[
+            *_p(
+                r"alerta\s+de\s+passagens\s+ppv",
+                r"\d+\s*milhas\s*\+\s*taxas",
+            ),
+            *_p_cs(r"\b[A-Z]{3}\b.{0,10}\b[A-Z]{3}\b"),
+        ],
         confirm_transfer_bonus=_p(
             r"b[oô]nus.*transfer[eê]ncia\s+de\s+\w+\s+para\s+\w+",
-            r"transfer[eê]ncia.*\d+%",
         ),
         confirm_accumulation=_p(
             r"\d+\s+pontos\s+por\s+real",
@@ -68,7 +73,6 @@ SITE_RULES: dict[str, SiteRule] = {
         ),
         confirm_transfer_bonus=_p(
             r"b[oô]nus.*transfer[eê]ncia",
-            r"transfer[eê]ncia.*\d+%",
         ),
         confirm_accumulation=_p(
             r"\d+\s+pontos\s+por\s+real",
