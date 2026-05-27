@@ -50,7 +50,9 @@ Cada etapa é função determinística. Sem agente, sem memória, sem estado com
 ```
 DATABASE_URL       # PostgreSQL (service role — bypassa RLS)
 RESEND_API_KEY
+EMAIL_FROM         # default: "Radar de Milhas <noreply@example.com>"
 DIGEST_RECIPIENT   # fallback para testes
+APP_BASE_URL       # default: "https://localhost:3000" — usado em links de e-mail
 SENTRY_DSN
 SLACK_WEBHOOK_URL  # alertas de erro do pipeline
 ```
@@ -62,14 +64,15 @@ SLACK_WEBHOOK_URL  # alertas de erro do pipeline
 ```
 /src
   types.py                      # RawSignal, PromotionData, UserPreferencesData, FlightRoute
-                                # SourceType = "rss"
+                                # TransferPair, PromoType, SourceType = "rss"
   /pipeline
     /monitors
       news_monitor.py           # único monitor — RSS + fetch HTML completo dos artigos
-    extractor.py                # RawSignal → PromotionData (date-context-aware)
-    dedup.py                    # fingerprint + verificação semântica
+    extractor.py                # RawSignal → PromotionData (date-context-aware, usa site_rules)
+    site_rules.py               # SiteRule dataclass + SITE_RULES por fonte (5 sites)
+    dedup.py                    # fingerprint SHA-256 + verificação semântica
     preference_filter.py        # matching usuário × promoção
-    dispatcher.py               # envio via Resend
+    dispatcher.py               # envio via Resend (day1 + confirmation)
   /tools
     http_client.py              # httpx-only, delay 2-5s por domínio
     user_agents.py
@@ -82,14 +85,21 @@ SLACK_WEBHOOK_URL  # alertas de erro do pipeline
     day1.html, confirmation.html
   /db
     models.py                   # Promotion, UserPreferences, EmailLog, MonitorState, AutomationLog
-    /migrations                 # Alembic, head: 010
+    /migrations                 # Alembic, head: 012
 /api                            # Vercel Python serverless handlers (cadastro)
   /preferences
   /unsubscribe
 /public                         # Site estático (Vercel)
 /scripts
   run_pipeline.py               # entry point GitHub Actions
-/tests/unit                     # 66 testes
+/tests/unit                     # 78 testes
+  test_extractor.py
+  test_extractor_flight_award.py
+  test_extractor_site_rules.py
+  test_dedup.py
+  test_preference_filter.py
+  test_preference_filter_flight.py
+  test_airports.py
 /tests/fixtures
   rss_melhores_destinos.xml
 ```
@@ -140,6 +150,11 @@ pytest tests/unit/
 - Se o RSS retorna < 1500 chars, busca o HTML completo do artigo.
 - Seletores site-específicos (`_SITE_SELECTORS`): primeira match vence (não a mais longa) — evita capturar sidebars.
 - Strip de `script/style/iframe/nav/header/footer/aside` antes de extrair texto.
+
+**extractor.py — classificação:**
+- `_classify_promo_type` aplica regras na ordem: confirm_flight_award → confirm_transfer_bonus → confirm_accumulation → reject rules → generic transfer_bonus → generic flight_award → other.
+- Regras por site ficam em `site_rules.py` (SITE_RULES dict). Sites sem regra usam apenas a lógica genérica.
+- `_GLOBAL_TRANSFER_EXCLUDE_RE` bloqueia transfer_bonus em textos de compra direta de milhas ou acúmulo por real gasto — aplicado antes das regras de site.
 
 **extractor.py — datas:**
 - `_extract_date_range` é **context-aware**: datas com "válido até", "termina", "encerra", "expira", "prazo", "até" → end_candidates. Demais → start_candidates.

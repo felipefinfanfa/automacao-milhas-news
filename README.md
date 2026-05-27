@@ -55,12 +55,13 @@ src/
 ├── pipeline/
 │   ├── monitors/news_monitor.py   # único monitor — RSS + fetch HTML completo
 │   ├── extractor.py               # extração + classificação + fingerprint
-│   ├── dedup.py                   # 2 camadas: fingerprint + semântico
-│   ├── preference_filter.py
+│   ├── site_rules.py              # regras de classificação por site (5 fontes)
+│   ├── dedup.py                   # 2 camadas: fingerprint SHA-256 + semântico
+│   ├── preference_filter.py       # matching usuário × promoção
 │   └── dispatcher.py              # envio via Resend
 ├── db/
-│   ├── models.py                  # ORM
-│   └── migrations/                # Alembic, head: 010
+│   ├── models.py                  # ORM (Promotion, UserPreferences, EmailLog, …)
+│   └── migrations/                # Alembic, head: 012
 ├── api/schemas/preferences.py     # schemas reutilizados pelos handlers Vercel
 ├── config/settings.py             # env vars + NEWS_RSS_FEEDS + programas válidos
 ├── config/airports.py             # CITY_TO_IATA
@@ -95,7 +96,9 @@ python scripts/run_pipeline.py
 |----------|-----------|
 | `DATABASE_URL` | Connection string PostgreSQL/Supabase (service role) |
 | `RESEND_API_KEY` | Chave Resend |
+| `EMAIL_FROM` | Remetente do e-mail (ex: `Radar de Milhas <noreply@seudominio.com>`) |
 | `DIGEST_RECIPIENT` | E-mail para testes manuais |
+| `APP_BASE_URL` | URL base do frontend — usado em links de e-mail |
 | `SENTRY_DSN` | DSN Sentry (opcional) |
 | `SLACK_WEBHOOK_URL` | Alertas de erro (opcional) |
 | `APP_ENV` | `production` ou `development` |
