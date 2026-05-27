@@ -118,5 +118,5 @@ pytest tests/unit/
 - `.github/workflows/supabase-keepalive.yml` — a cada 5 dias
 
 **Frontend + API (Vercel):**
-- `public/` servido em `milhas.felipefinfanfa.com.br`
+- `public/` servido via Vercel (domínio configurado via `APP_BASE_URL`)
 - `api/` exposto em `/api/*` como Vercel Functions

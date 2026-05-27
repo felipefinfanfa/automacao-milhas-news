@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     # Email — Resend (único provedor)
     resend_api_key: str = Field(default="", alias="RESEND_API_KEY")
     email_from: str = Field(
-        default="Radar de Milhas <noreply@felipefinfanfa.com.br>",
+        default="Radar de Milhas <noreply@example.com>",
         alias="EMAIL_FROM",
     )
 
@@ -43,7 +43,7 @@ class Settings(BaseSettings):
 
     # Capacity & URLs
     max_users: int = Field(default=40, alias="MAX_USERS")
-    app_base_url: str = Field(default="https://milhas.felipefinfanfa.com.br", alias="APP_BASE_URL")
+    app_base_url: str = Field(default="https://localhost:3000", alias="APP_BASE_URL")
 
     # Observability
     sentry_dsn: str = Field(default="", alias="SENTRY_DSN")
