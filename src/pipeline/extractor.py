@@ -17,6 +17,8 @@ logger = logging.getLogger(__name__)
 
 _KNOWN_PROGRAMS = {"smiles", "azul", "latam", "livelo", "esfera", "iupp"}
 
+_PROGRAM_RE_CACHE: dict[str, re.Pattern[str]] = {}
+
 _PROGRAM_LABELS: dict[str, str] = {
     "smiles": "smiles",
     "gol": "smiles",
@@ -274,9 +276,12 @@ def _find_programs(text: str) -> list[str]:
     lower = text.lower()
     hits: list[tuple[int, str]] = []
     for key, val in _PROGRAM_LABELS.items():
-        pos = lower.find(key)
-        if pos != -1:
-            hits.append((pos, val))
+        pattern = _PROGRAM_RE_CACHE.setdefault(
+            key, re.compile(rf"\b{re.escape(key)}\b", re.I)
+        )
+        m = pattern.search(lower)
+        if m:
+            hits.append((m.start(), val))
     hits.sort(key=lambda x: x[0])
     seen: set[str] = set()
     result: list[str] = []
